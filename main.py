@@ -1,8 +1,10 @@
 import argparse
-import logging
+#import logging
+from loguru import logger
 import torch
+from datetime import datetime
 
-from utils.datasets import get_cifar_10
+from utils.datasets import get_cifar_10, get_mnist
 from utils.models import get_ResNet50
 
 from training import TrainUncertainty
@@ -36,7 +38,7 @@ def parse_args():
         type=str,
         help="Training on which dataset",
         default="Cifar10",
-        choices=["Cifar10"]
+        choices=["cifar10", "mnist"]
     )
     parser.add_argument(
         "--epochs",
@@ -66,34 +68,51 @@ def main(args):
     model = args.model
     epochs = args.epochs
 
+    # Create logging state
+    now = datetime.now() # current time
+    now_formatted = now.strftime("%d.%m.%y %H:%M:%S")
+    settings = {"time": now_formatted,
+                "title": "TO DO",
+                "setup": setup,
+                "model": model,
+                "dataset": dataset,
+                "batchsize": "TODO"}
+
 
     # Select Device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Select Dataset
-    if dataset == "Cifar10":
+    logger.info("Loading Dataset")
+    if dataset == "cifar10":
         trainset, testset = get_cifar_10()
+    elif dataset == "mnist":
+        trainset, testset = get_mnist()
     else:
-        logging.warning("No dataset selected. Will select Cifar10")
+        logger.warning("No dataset selected. Will select Cifar10")
         trainset, testset = get_cifar_10()
 
     # Select Model
+    logger.info("Loading Model")
     if model == "ResNet50":
         torchmodel = get_ResNet50(pretrained=True)
     else:
-        logging.warning("No model selected. Will select ResNet50")
+        logger.warning("No model selected. Will select ResNet50")
         torchmodel = get_ResNet50(pretrained=True)
 
 
 
     # Start Pipeline
-    pipeline = TrainUncertainty(device=device, 
-                     model=torchmodel, 
-                     trainset=trainset, 
-                     testset=testset, 
-                     batch_size=8)
+    logger.info("Starting Pipeline")
+    pipeline = TrainUncertainty(settings=settings,
+                                device=device, 
+                                model=torchmodel, 
+                                trainset=trainset, 
+                                testset=testset, 
+                                batch_size=32)
 
 
+    logger.info("Starting Training")
     history = pipeline.train(num_epochs = epochs)
 
 

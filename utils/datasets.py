@@ -1,6 +1,6 @@
 import torch
 import torchvision
-import torchvision.T as T
+from torchvision import transforms as T
 
 
 
@@ -11,5 +11,15 @@ def get_cifar_10():
 
     trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
     testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+    
+    return trainset, testset
+
+
+def get_mnist():
+    transform = T.Compose([T.ToTensor(),
+                T.Normalize([0.5], [0.5])])
+
+    trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+    testset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
     
     return trainset, testset

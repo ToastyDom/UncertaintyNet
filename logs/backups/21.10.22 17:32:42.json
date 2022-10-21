@@ -1,0 +1,66 @@
+{
+    "21.10.22 16:18": {
+        "title": "Hier vlt ein Titel einf\u00fcgen",
+        "setup": "training from scratch",
+        "model": "ResNet50",
+        "dataset": "Cifar10",
+        "batchsize": "8",
+        "current epoch": "10",
+        "current checkpoint": "/outputs/tag/xxx.pth",
+        "best checkpoint": "/outputs/tag/xxx.pth",
+        "ECE_score": "30",
+        "Accuracy": "0.9",
+        "history": {
+            "training_loss": "[]",
+            "testing_loss": "[]"
+        }
+    },
+    "21.10.22 17:22:09": {
+        "title": "TO DO",
+        "setup": "training",
+        "model": "ResNet50",
+        "dataset": "cifar10",
+        "batchsize": "TODO",
+        "current_epoch": 10,
+        "current_checkpoint": "TODO",
+        "best_checkpoint": "TODO",
+        "ECE_score": "TODO",
+        "accuracy": "TODO",
+        "history": {
+            "training_loss": [],
+            "testing_loss": []
+        }
+    },
+    "21.10.22 17:31:40": {
+        "title": "TO DO",
+        "setup": "training",
+        "model": "ResNet50",
+        "dataset": "cifar10",
+        "batchsize": "TODO",
+        "current_epoch": 10,
+        "current_checkpoint": "TODO",
+        "best_checkpoint": "TODO",
+        "ECE_score": "TODO",
+        "accuracy": "TODO",
+        "history": {
+            "training_loss": [],
+            "testing_loss": []
+        }
+    },
+    "21.10.22 17:32:42": {
+        "title": "TO DO",
+        "setup": "training",
+        "model": "ResNet50",
+        "dataset": "cifar10",
+        "batchsize": "TODO",
+        "current_epoch": 10,
+        "current_checkpoint": "TODO",
+        "best_checkpoint": "TODO",
+        "ECE_score": "TODO",
+        "accuracy": "TODO",
+        "history": {
+            "training_loss": [],
+            "testing_loss": []
+        }
+    }
+}
