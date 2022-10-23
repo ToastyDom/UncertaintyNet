@@ -27,7 +27,7 @@ def ensure_directory(path):
 
 
 
-def update_logs(settings):
+def update_logs(settings, best=False):
     # TODO: Vielleicht noch original Log markieren
 
     with open("logs/training_logs.json") as json_file:
@@ -48,8 +48,17 @@ def update_logs(settings):
         log_json[log_time]["current_checkpoint"] = settings["current_checkpoint"]
         log_json[log_time]["best_checkpoint"] = settings["best_checkpoint"]
         log_json[log_time]["ECE_score"] = settings["ECE_score"]
-        log_json[log_time]["accuracy"] = settings["accuracy"]
         log_json[log_time]["history"] = settings["history"]
+
+
+        if "best_config" not in log_json[log_time]:
+            log_json[log_time]["best_config"] = {}
+
+        if best:
+            log_json[log_time]["best_config"]["this_epoch"] = settings["current_epoch"][-1]
+            log_json[log_time]["best_config"]["this_accuracy"] = settings["history"]["accuracy"][-1]
+            log_json[log_time]["best_config"]["this_ECE_score"] = settings["ECE_score"][-1]
+        
 
     # save changes
     with open("logs/training_logs.json", "w") as json_file:
@@ -94,6 +103,7 @@ class TrainUncertainty:
         self.batch_size = batch_size
         self.settings = settings
         self.this_epoch = 0
+        self.best_accuracy = 0.0
 
 
         # For now hardcoded optimiziers
@@ -134,7 +144,7 @@ class TrainUncertainty:
         self.epoch = state['epoch']
 
 
-    def save(self, file_name, epoch):
+    def save(self, best=False):
 
         # make sure backup folder exists
         ensure_directory("./checkpoints")
@@ -155,7 +165,11 @@ class TrainUncertainty:
 
         }
 
-        torch.save(state, f'checkpoints/{file_name}_{str(epoch)}.pt')
+        if best:
+            torch.save(state, self.model_path)
+            torch.save(state, self.best_path)
+        else:
+            torch.save(state, self.model_path)
 
 
 
@@ -258,18 +272,27 @@ class TrainUncertainty:
 
             # Save training state
             self.this_epoch = epoch + 1
-            # TODO: Implement
+            self.model_path = f'checkpoints/best_{str(self.this_epoch)}.pt'
+            self.best_path = f'checkpoints/best_{str(self.this_epoch)}.pt'
+
+            if accuracy > self.best_accuracy:
+                self.best = True
+                self.best_accuracy = accuracy
+                self.save(best=True)
+            else:
+                self.best = False
+                self.save()
+
 
             
 
             # Update Logging
             self.settings["current_epoch"] = epoch
-            self.settings["current_checkpoint"] = "TODO"
-            self.settings["best_checkpoint"] = "TODO"
+            self.settings["current_checkpoint"] = self.model_path
+            self.settings["best_checkpoint"] = self.best_path
             self.settings["ECE_score"] = "TODO"
-            self.settings["accuracy"] = "TODO"
             self.settings["history"] = self.history
-            update_logs(self.settings)
+            update_logs(self.settings, self.best)
 
 
         backup_logs(self.settings)
