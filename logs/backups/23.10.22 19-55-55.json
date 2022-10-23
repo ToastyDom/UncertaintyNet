@@ -146,50 +146,5 @@
             "this_accuracy": 0.8593,
             "this_ECE_score": "O"
         }
-    },
-    "23.10.22 20:28:39": {
-        "title": "TO DO",
-        "setup": "training",
-        "model": "ResNet50",
-        "dataset": "cifar10",
-        "batchsize": 32,
-        "current_epoch": 2,
-        "current_checkpoint": "checkpoints/model_3.pt",
-        "best_checkpoint": "checkpoints/best_model.pt",
-        "ECE_score": "TODO",
-        "history": {
-            "training_loss": [
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ],
-            "validation_loss": [
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ],
-            "accuracy": [
-                0.7626,
-                0.8347,
-                0.8414,
-                0.8593,
-                0.8576,
-                0.8684,
-                0.8689
-            ]
-        },
-        "best_config": {
-            "this_epoch": 2,
-            "this_accuracy": 0.8689,
-            "this_ECE_score": "O"
-        }
     }
 }

@@ -22,13 +22,23 @@ Vlt noch settings.json einfügen für leanring rate oder so
 
 
 def ensure_directory(path):
+    """Method to ensure directory exists
+
+    Args:
+        path (str): path to folder to create
+    """
     if not os.path.exists(path):
         os.mkdir(path)
 
 
 
 def update_logs(settings, best=False):
-    # TODO: Vielleicht noch original Log markieren
+    """Function to update logs of the training configuration
+
+    Args:
+        settings (dict): dict with the current settings
+        best (bool, optional): If this is the best model. Defaults to False.
+    """
 
     with open("logs/training_logs.json") as json_file:
         log_json = json.load(json_file)
@@ -51,11 +61,12 @@ def update_logs(settings, best=False):
         log_json[log_time]["history"] = settings["history"]
 
 
+        # If this is the best model. save that in the config
         if "best_config" not in log_json[log_time]:
             log_json[log_time]["best_config"] = {}
 
         if best:
-            log_json[log_time]["best_config"]["this_epoch"] = settings["current_epoch"][-1]
+            log_json[log_time]["best_config"]["this_epoch"] = settings["current_epoch"]
             log_json[log_time]["best_config"]["this_accuracy"] = settings["history"]["accuracy"][-1]
             log_json[log_time]["best_config"]["this_ECE_score"] = settings["ECE_score"][-1]
         
@@ -69,6 +80,11 @@ def update_logs(settings, best=False):
 
 
 def backup_logs(settings):
+    """Method to create backup of the log after each epoch so we dont loose data
+
+    Args:
+        settings (dict): dict of current settings
+    """
 
     # make sure backup folder exists
     ensure_directory("./logs/backups")
@@ -89,11 +105,15 @@ def backup_logs(settings):
 class TrainUncertainty:
 
     def __init__(self, settings, device, model, trainset, testset, batch_size = 64):
-        """
+        """Training class to train the models
+
         Args:
-            device (_type_): _description_
-            network (_type_): _description_
-            batch_size (int, optional): _description_. Defaults to 64.
+            settings (dict): dict with current settings
+            device (str): either cpu or gpu
+            model (torch): torch model to train
+            trainset (torch dataset): Trainingset
+            testset (torch dataset): Testingset
+            batch_size (int, optional): Batches for training. Defaults to 64.
         """
 
         self.device = device
@@ -123,8 +143,8 @@ class TrainUncertainty:
         """
         Load stored checkpoint to resume training.
 
-        Parameters:
-            - checkpoint (str): Path to stored training state.
+        Args:
+            checkpoint (str): Path to stored training state.
 
         """
         self.model.to(self.device)
@@ -145,6 +165,11 @@ class TrainUncertainty:
 
 
     def save(self, best=False):
+        """Function to save current state of training
+
+        Args:
+            best (bool, optional): If this is the best model. Defaults to False.
+        """
 
         # make sure backup folder exists
         ensure_directory("./checkpoints")
@@ -161,7 +186,10 @@ class TrainUncertainty:
             'epoch': self.this_epoch,
 
             # Save previous training history.
-            'history': self.history
+            'history': self.history,
+
+            # Save settings for logging
+            'settings': self.settings
 
         }
 
@@ -174,6 +202,13 @@ class TrainUncertainty:
 
 
     def train(self, num_epochs):
+        """Function to train the model
+
+        Args:
+            num_epochs (int): amount of epochs to train
+        Returns:
+            self.history: training history
+        """
 
         self.model.to(self.device)
 
@@ -271,9 +306,12 @@ class TrainUncertainty:
                     
 
             # Save training state
+            log_time = self.settings["time"]
+            log_time = log_time.replace(":","-")
             self.this_epoch = epoch + 1
-            self.model_path = f'checkpoints/best_{str(self.this_epoch)}.pt'
-            self.best_path = f'checkpoints/best_{str(self.this_epoch)}.pt'
+            ensure_directory(f"checkpoints/{log_time}")
+            self.model_path = f'checkpoints/{log_time}/model_{str(self.this_epoch)}.pt'
+            self.best_path = f'checkpoints/{log_time}/best_model.pt'
 
             if accuracy > self.best_accuracy:
                 self.best = True

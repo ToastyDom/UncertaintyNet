@@ -4,7 +4,7 @@ from loguru import logger
 import torch
 from datetime import datetime
 
-from utils.datasets import get_cifar_10, get_mnist
+from utils.datasets import get_cifar_10
 from utils.models import get_ResNet50
 
 from training import TrainUncertainty
@@ -31,6 +31,14 @@ def parse_args():
         help="Select a model which should be trained",
         default="ResNet50",
         choices=["ResNet50"]
+    )  
+
+    parser.add_argument(
+        "-c",
+        "--checkpoint",
+        type=str,
+        help="Which checkpoint to add",
+        required=False
     )    
     parser.add_argument(
         "-d",
@@ -45,6 +53,13 @@ def parse_args():
         "-e",
         type=int,
         help="Number of epochs to train",
+    )
+
+    parser.add_argument(
+        "--batchsize",
+        "-b",
+        type=int,
+        help="Amount of batches",
     )
     parser.add_argument(
         "--log-level",
@@ -62,11 +77,19 @@ def parse_args():
 
 
 def main(args):
+    """Main function that starts pip
+
+    Args:
+        args (parser): parser arguments
+    """
 
     setup = args.setup
     dataset = args.dataset
     model = args.model
     epochs = args.epochs
+    batchsize = args.batchsize
+    checkpoint = args.checkpoint
+ 
 
     # Create logging state
     now = datetime.now() # current time
@@ -76,7 +99,7 @@ def main(args):
                 "setup": setup,
                 "model": model,
                 "dataset": dataset,
-                "batchsize": "TODO"}
+                "batchsize": batchsize}
 
 
     # Select Device
@@ -86,8 +109,6 @@ def main(args):
     logger.info("Loading Dataset")
     if dataset == "cifar10":
         trainset, testset = get_cifar_10()
-    elif dataset == "mnist":
-        trainset, testset = get_mnist()
     else:
         logger.warning("No dataset selected. Will select Cifar10")
         trainset, testset = get_cifar_10()
@@ -109,8 +130,13 @@ def main(args):
                                 model=torchmodel, 
                                 trainset=trainset, 
                                 testset=testset, 
-                                batch_size=32)
+                                batch_size=batchsize)
 
+
+
+    if checkpoint is not None:
+        logger.info("Loading Checkpoint")
+        pipeline.load(checkpoint)
 
     logger.info("Starting Training")
     history = pipeline.train(num_epochs = epochs)

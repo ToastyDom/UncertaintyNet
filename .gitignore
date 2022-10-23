@@ -1,2 +1,5 @@
 
 *.pyc
+*.pt
+*.gz
+data/
