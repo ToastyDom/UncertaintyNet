@@ -3,11 +3,20 @@ import argparse
 from loguru import logger
 import torch
 from datetime import datetime
+import optuna
 
 from utils.datasets import get_cifar_10
-from utils.models import get_ResNet50
+from utils.models import get_ResNet50, get_ResNet18
 
 from training import TrainUncertainty
+
+
+
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning) 
+
+
 
 
 
@@ -22,15 +31,24 @@ def parse_args():
         type=str,
         help="Training or Finetuning?",
         default="training",
-        choices=["training", "finetuning"],
+        choices=["train", "optim", "test", "plot"],
     )
     parser.add_argument(
         "-m",
         "--model",
         type=str,
         help="Select a model which should be trained",
-        default="ResNet50",
-        choices=["ResNet50"]
+        default="resnet50",
+        choices=["resnet50", "resnet18"]
+    )
+
+    parser.add_argument(
+        "-p",
+        "--pretrained",
+        type=str,
+        help="Should the model use pretrained weights",
+        default="True",
+        choices=["True", "False"]
     )  
 
     parser.add_argument(
@@ -56,10 +74,40 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--learningrate",
+        "-lr",
+        type=float,
+        help="Which learning rate to choose",
+    )
+
+    parser.add_argument(
+        "--optimizer",
+        "-o",
+        type=str,
+        help="Which Optimizer to choose",
+        choices=["SGD", "ADAM"]
+    )
+
+    parser.add_argument(
         "--batchsize",
         "-b",
         type=int,
         help="Amount of batches",
+    )
+
+    parser.add_argument(
+        "--freeze",
+        "-f",
+        type=str,
+        default="True",
+        choices=["True", "False"],
+        required=False
+    )
+    parser.add_argument(
+        "--title",
+        "-t",
+        type=str,
+        required=False
     )
     parser.add_argument(
         "--log-level",
@@ -75,7 +123,6 @@ def parse_args():
 
 
 
-
 def main(args):
     """Main function that starts pip
 
@@ -86,19 +133,27 @@ def main(args):
     setup = args.setup
     dataset = args.dataset
     model = args.model
+    pretrained = args.pretrained
     epochs = args.epochs
     batchsize = args.batchsize
+    freeze = args.freeze
     checkpoint = args.checkpoint
+    title = args.title
+    learningrate = args.learningrate
+    optimizer = args.optimizer
  
-
     # Create logging state
     now = datetime.now() # current time
     now_formatted = now.strftime("%d.%m.%y %H:%M:%S")
     settings = {"time": now_formatted,
-                "title": "TO DO",
+                "title": title,
                 "setup": setup,
                 "model": model,
+                "pretrained": pretrained,
+                "optimizer": optimizer,
+                "learningrate": learningrate,
                 "dataset": dataset,
+                "freeze": freeze,
                 "batchsize": batchsize}
 
 
@@ -108,18 +163,20 @@ def main(args):
     # Select Dataset
     logger.info("Loading Dataset")
     if dataset == "cifar10":
-        trainset, testset = get_cifar_10()
+        trainset, validationset, testset, num_classes = get_cifar_10()
     else:
         logger.warning("No dataset selected. Will select Cifar10")
-        trainset, testset = get_cifar_10()
+        trainset, validationset, testset, num_classes = get_cifar_10()
 
     # Select Model
     logger.info("Loading Model")
-    if model == "ResNet50":
-        torchmodel = get_ResNet50(pretrained=True)
+    if model == "resnet50":
+        torchmodel = get_ResNet50(pretrained=True, freeze=freeze, num_classes=num_classes)
+    elif model == "resnet18":
+        torchmodel = get_ResNet18(pretrained=True, freeze=freeze, num_classes=num_classes)
     else:
         logger.warning("No model selected. Will select ResNet50")
-        torchmodel = get_ResNet50(pretrained=True)
+        torchmodel = get_ResNet50(pretrained=True,freeze=freeze, num_classes=num_classes)
 
 
 
@@ -127,10 +184,14 @@ def main(args):
     logger.info("Starting Pipeline")
     pipeline = TrainUncertainty(settings=settings,
                                 device=device, 
-                                model=torchmodel, 
-                                trainset=trainset, 
+                                model=torchmodel,
+                                num_classes=num_classes, 
+                                trainset=trainset,
+                                validationset=validationset, 
                                 testset=testset, 
-                                batch_size=batchsize)
+                                batch_size=batchsize,
+                                optimizer=optimizer,
+                                learningrate=learningrate)
 
 
 
@@ -138,8 +199,28 @@ def main(args):
         logger.info("Loading Checkpoint")
         pipeline.load(checkpoint)
 
-    logger.info("Starting Training")
-    history = pipeline.train(num_epochs = epochs)
+
+    if setup == "train":
+        logger.info("Starting Training")
+        history = pipeline.train(num_epochs = epochs)
+
+
+    elif setup == "optim":
+        logger.info("Starting Optimiation")
+        pipeline.hypersearch = True
+        
+        r = pipeline.hyper_optimizer(num_trials=epochs)
+       
+
+
+    elif setup == "test":
+        logger.info("Starting Testing")
+        history = pipeline.test()
+
+    elif setup == "plot":
+        logger.info("Starting Plotting")
+        pipeline.plot()
+
 
 
     pass

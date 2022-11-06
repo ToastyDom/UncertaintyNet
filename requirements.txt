@@ -1,2 +1,7 @@
 tqdm
 loguru
+matplotlib
+torchmetrics
+sklearn
+optuna
+tensorflow
