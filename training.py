@@ -175,6 +175,8 @@ class TrainUncertainty:
             'balanced_accuracy': []
         }
 
+        ensure_directory("checkpoints")
+
 
     def objective(self, trial):
 
@@ -311,7 +313,7 @@ class TrainUncertainty:
                     running_validation_loss += loss.data.item() * inputs.size(0)
 
                     # Predicted Labels
-                    pred_labels = torch.max(F.softmax(outputs, dim = 1), dim = 1)[1]   
+                    pred_labels = torch.max(F.softmax(outputs, dim = 1), dim = 1)[1]
 
                     # Count correct ones
                     correct = torch.eq(pred_labels, labels).view(-1)
@@ -319,9 +321,13 @@ class TrainUncertainty:
                     num_examples += correct.shape[0]
 
                     # Collect all outputs
+                    pred_labels = pred_labels.cpu()
+                    outputs = outputs.cpu()
+                    labels = labels.cpu()
                     all_predicitons = np.concatenate((all_predicitons,pred_labels))
                     all_labels = np.concatenate((all_labels,labels))
-
+                    
+                   
                     if all_outputs == []:
                         all_outputs = outputs
                     else:
