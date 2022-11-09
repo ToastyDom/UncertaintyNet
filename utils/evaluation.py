@@ -8,60 +8,31 @@ from torchmetrics.classification import MulticlassCalibrationError
 from torchmetrics.classification import MulticlassSpecificity
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, balanced_accuracy_score
+from sklearn.preprocessing import label_binarize
+import calibration
 
 
-def ece_score(model_output, model_labels, num_classes, n_bins=10):
-    metric = MulticlassCalibrationError(num_classes=num_classes, n_bins=n_bins, norm='l1')
-    result = metric(model_output, model_labels)
-    result = np.array(result)
-    result = float(result)
-    return result
+# def ece_score(model_output, model_labels, num_classes, n_bins=10):
+#     metric = MulticlassCalibrationError(num_classes=num_classes, n_bins=n_bins, norm='l1')
+#     result = metric(model_output, model_labels)
+#     result = np.array(result)
+#     result = float(result)
+#     return result
 
-#     # Output and labels to numpy arrays
-#     model_output = np.array(model_output)
-#     model_labels = np.array(model_labels)
 
-#     # If needed modify labels
-#     if model_labels.ndim > 1:
-#         model_labels = np.argmax(model_labels, axis=1)
+def ece_score(y_prob, model_labels):
 
-#     # Get prediction of each run (always the maxium value)
-#     model_output_index = np.argmax(model_output, axis=1)
+    ece = calibration.get_ece(y_prob, model_labels)
+    return ece
 
-#     # Get label index to each prediction
-#     model_output_value = []
-#     for i in range(model_output.shape[0]):
-#         model_output_value.append(model_output[i, model_output_index[i]])
-#     model_output_value = np.array(model_output_value)
 
-#     # Create bins for accuracy and confidence
-#     acc, conf = np.zeros(n_bins), np.zeros(n_bins)
-#     Bm = np.zeros(n_bins)
+def calibration_error(y_prob, model_labels):
+    calib_error = calibration.get_calibration_error(y_prob, model_labels)
+    return calib_error
 
-#     # For each bin
-#     for m in range(n_bins):
-#         a, b = m / n_bins, (m + 1) / n_bins  # First iteration: 0.1 and 0.2
-
-#         # for each model output
-#         for i in range(model_output.shape[0]):
-#             if model_output_value[i] > a and model_output_value[i] <= b:  # If output value (confidence) between those numbers, fill bin
-#                 Bm[m] += 1  # Fill overall bin
-#                 conf[m] += model_output_value[i] # Fill confidence bin
-#                 if model_output_index[i] == model_labels[i]:  # If its also correctly classified
-#                     acc[m] += 1  # Fill accuracy bin
-        
-#         # If this bin is not empty calculate accuracy and confidence
-#         if Bm[m] != 0:  
-#             acc[m] = acc[m] / Bm[m]
-#             conf[m] = conf[m] / Bm[m]
-
-#     # Calculate ece
-#     ece = 0
-
-#     # For each bin
-#     for m in range(n_bins):
-#         ece += Bm[m] * np.abs((acc[m] - conf[m]))
-#     return ece / sum(Bm)
+def top_calibration_error(y_prob, model_labels):
+    top_calib_error = calibration.get_top_calibration_error(y_prob, model_labels, p=1)
+    return top_calib_error
 
 
 def balanced_acc_score(model_output, model_labels):

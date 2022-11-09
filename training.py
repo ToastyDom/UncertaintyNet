@@ -6,7 +6,7 @@ from tqdm import tqdm
 import json
 import shutil
 import torch.nn.functional as F
-from utils.evaluation import ece_score, auroc_score, specificity_score, balanced_acc_score #, sensitivity_score
+from utils.evaluation import ece_score, auroc_score, specificity_score, balanced_acc_score, calibration_error, top_calibration_error #, sensitivity_score
 import matplotlib.pyplot as plt
 import optuna
 import torch.optim as optim
@@ -284,6 +284,8 @@ class TrainUncertainty:
         all_labels_tf = []
         all_outputs = []
         all_ece = []
+        all_calib = []
+        all_top_calib = []
         all_auroc = []
         all_spec = []
         all_senv = []
@@ -313,6 +315,7 @@ class TrainUncertainty:
                     running_validation_loss += loss.data.item() * inputs.size(0)
 
                     # Predicted Labels
+                    prob_output = F.softmax(outputs, dim=1).cpu().data.numpy()  # prediction probability, Eigentlich auch confidence
                     pred_labels = torch.max(F.softmax(outputs, dim = 1), dim = 1)[1]
 
                     # Count correct ones
@@ -327,7 +330,16 @@ class TrainUncertainty:
                     all_predicitons = np.concatenate((all_predicitons,pred_labels))
                     all_labels = np.concatenate((all_labels,labels))
                     
-                   
+                    # Get calibration errros:
+                    ece = ece_score(prob_output, np.array(labels))
+                    calib_error = calibration_error(prob_output, np.array(labels))
+                    top_calib_error = calibration_error(prob_output, np.array(labels))
+                    
+                    all_ece.append(ece)
+                    all_calib.append(calib_error)
+                    all_top_calib.append(top_calib_error)
+
+                    
                     if all_outputs == []:
                         all_outputs = outputs
                     else:
@@ -337,8 +349,25 @@ class TrainUncertainty:
                         all_labels_tf = labels
                     else:
                         all_labels_tf = torch.cat([all_labels_tf, labels], dim=0)
+
                     
      
+        
+        
+        # Calculate Errros:
+        avg_ece = np.mean(all_ece)
+        avg_calib = np.mean(all_calib)
+        avg_top_calib = np.mean(all_top_calib)
+
+        # Calculate Errors new
+        all_preds = F.softmax(all_outputs, dim=1).cpu().data.numpy()
+        print(all_preds.shape)
+        print(np.array(all_labels).shape)
+        ece = ece_score(all_preds, np.array(all_labels))
+        calib_error = calibration_error(all_preds, np.array(all_labels))
+        top_calib_error = calibration_error(all_preds, np.array(all_labels))
+        
+        
         # Valivation loss
         running_validation_loss /= len(this_dataloader.dataset)
 
@@ -347,9 +376,6 @@ class TrainUncertainty:
 
         # Balanced Accuracy
         balanced_acc = balanced_acc_score(all_predicitons, all_labels)
-
-        # ECE
-        ece = ece_score(all_outputs, all_labels_tf, self.num_classes, n_bins=10)
 
         # AUROC
         auroc = auroc_score(all_outputs, all_labels_tf, self.num_classes)
@@ -361,7 +387,13 @@ class TrainUncertainty:
         sensitivity = 0
 
         print(f'validation_loss: {running_validation_loss}')
+        #print(f'ece: {ece}')
+        print(f'avg_ece: {avg_ece}')
         print(f'ece: {ece}')
+        print(f'avg_calib_error: {avg_calib}')
+        print(f'calib_errpr: {calib_error}')
+        print(f'avg_top_calib_error: {avg_top_calib}')
+        print(f'top_calib_error: {top_calib_error}')
         print(f'specificity: {specificity}')
         print(f'sensitivity: {sensitivity}')
         print(f'auroc: {auroc}')
