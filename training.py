@@ -141,12 +141,12 @@ class TrainUncertainty:
         
         # Select Optimizer
         if self.str_optimizer == "SGD":
-            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learningrate, momentum=0.4)
+            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learningrate, momentum=0.9, weight_decay=5e-4)
         elif self.str_optimizer == "ADAM":
-            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learningrate, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.0001, amsgrad=False)
+            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learningrate, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
         else:
             logger.warning("No Optimizer selected! And therefore no learningrate")
-            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
+            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
 
 
         # Select Criterion
@@ -159,7 +159,6 @@ class TrainUncertainty:
 
         # Initiate Dataloades
         self.trainloader = torch.utils.data.DataLoader(self.trainset, batch_size=self.batch_size, shuffle=True, num_workers=2)
-        self.valloader = torch.utils.data.DataLoader(self.validationset, batch_size=self.batch_size, shuffle=True, num_workers=2)
         self.testloader = torch.utils.data.DataLoader(self.testset, batch_size=self.batch_size, shuffle=True, num_workers=2)
 
         # Model to Device
@@ -535,7 +534,10 @@ class TrainUncertainty:
                 # Store loss
                 running_training_loss += loss.item()
                 running_corrects += torch.sum(preds == labels.data)
-                
+            
+
+            # Print LR
+            print("Learning Rate:", self.optimizer.param_groups[0]["lr"])
 
             # Safe Training loss
             running_training_loss /= len(self.trainloader.dataset)
@@ -607,6 +609,8 @@ class TrainUncertainty:
 
 
     def hyper_optimizer(self, num_trials):
+        self.valloader = torch.utils.data.DataLoader(self.validationset, batch_size=self.batch_size, shuffle=True, num_workers=2)
+        
         study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler())
         study.optimize(self.objective, n_trials=num_trials)
         best_trial = study.best_trial
