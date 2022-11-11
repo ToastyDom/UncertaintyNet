@@ -75,8 +75,12 @@ def update_logs(settings, best=False, optim_data={}):
         if best:
             log_json[log_time]["best_config"]["this_epoch"] = settings["current_epoch"]
             log_json[log_time]["best_config"]["this_train_accuracy"] = settings["history"]["training_accuracy"][-1]
-            log_json[log_time]["best_config"]["this_val_accuracy"] = settings["history"]["validation_accuracy"][-1]
+            log_json[log_time]["best_config"]["this_test_accuracy"] = settings["history"]["testing_accuracy"][-1]
+            log_json[log_time]["best_config"]["this_balanced_test_accuracy"] = settings["history"]["balanced_accuracy"][-1]
             log_json[log_time]["best_config"]["this_ece"] = settings["history"]["ece"][-1]
+            log_json[log_time]["best_config"]["this_brier"] = settings["history"]["brier"][-1]
+            log_json[log_time]["best_config"]["this_calib_error"] = settings["history"]["calib_error"][-1]
+            log_json[log_time]["best_config"]["this_top_calib_error"] = settings["history"]["top_calib_error"][-1]
             log_json[log_time]["best_config"]["this_auroc"] = settings["history"]["auroc"][-1]
             log_json[log_time]["best_config"]["this_sensitivty"] = settings["history"]["sensitivity"][-1]
             log_json[log_time]["best_config"]["this_specificity"] = settings["history"]["specificity"][-1]
@@ -168,6 +172,7 @@ class TrainUncertainty:
             'training_accuracy': [],
             'testing_loss': [],
             'ece': [],
+            'brier': [],
             'calib_error': [],
             'top_calib_error': [],
             'auroc': [],
@@ -183,11 +188,11 @@ class TrainUncertainty:
     def objective(self, trial):
 
         self.optim_params = {
-                'learning_rate': trial.suggest_log('learning_rate', 1e-6, 1e-1),
+                'learning_rate': trial.suggest_float('learning_rate', 1e-6, 1e-1,log=True),
                 'optimizer': trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
                 'batchsize': trial.suggest_categorical("batchsize", [32,64,128,256,512]),
                 'momentum': trial.suggest_float("momentum", 0.0, 1.0, step=0.1),
-                'weight_dacay': trial.suggest_log('weight_dacay', 1e-6, 1e-1)
+                'weight_dacay': trial.suggest_float('weight_dacay', 1e-6, 1e-1, log=True)
                 }
     
         
@@ -376,7 +381,7 @@ class TrainUncertainty:
         print(f'accuracy: {accuracy}')
         print(f'balanced_accuracy: {balanced_acc}')
 
-        return running_validation_loss, ece, calib_error, top_calib_error, specificity, sensitivity, auroc, accuracy, balanced_acc
+        return running_validation_loss, ece, brier, calib_error, top_calib_error, specificity, sensitivity, auroc, accuracy, balanced_acc
 
 
     def plot(self):
@@ -546,7 +551,7 @@ class TrainUncertainty:
             # Testing #
             ##############
 
-            running_validation_loss, ece, calib_error, top_calib_error, specificity, sensitivity, auroc, test_accuracy, balanced_acc = self.test()
+            running_validation_loss, ece, brier, calib_error, top_calib_error, specificity, sensitivity, auroc, test_accuracy, balanced_acc = self.test()
 
 
             ##############
@@ -556,6 +561,7 @@ class TrainUncertainty:
             # Save state in history
             self.history['testing_loss'].append(running_validation_loss)
             self.history['ece'].append(ece)
+            self.history['brier'].append(brier)
             self.history['calib_error'].append(calib_error)
             self.history['top_calib_error'].append(top_calib_error)
             self.history['specificity'].append(specificity)

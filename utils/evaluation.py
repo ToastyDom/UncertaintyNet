@@ -53,12 +53,8 @@ def auroc_score(model_output, model_labels, n_classes):
 
 
 def brier_multi(model_probs, targets, num_classes):
-    print(targets)
     binarize_targets = label_binarize(targets, classes=np.arange(num_classes))
-    print(binarize_targets)
-    print(model_probs)
     score = np.mean(np.sum((model_probs - binarize_targets)**2, axis=1))
-    print(score)
     return score
 
 
