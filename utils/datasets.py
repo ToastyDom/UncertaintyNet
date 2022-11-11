@@ -1,11 +1,13 @@
 import torch
 import torchvision
 from torchvision import transforms as T
+from loguru import logger
 
 
+# torch.manual_seed(0)
+# np.random.seed(0)
 
-
-def get_cifar_10():
+def get_cifar_10(setup):
     train_transform = T.Compose([T.Resize((224,224)),  #resises the image so it can be perfect for our model.
                                  T.RandomHorizontalFlip(), # FLips the image w.r.t horizontal axis
                                  T.RandomRotation(10),     #Rotates the image to a specified angel
@@ -21,8 +23,12 @@ def get_cifar_10():
 
     trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
 
-    # Split training set into sets for training and validation.
-    trainset, validationset = torch.utils.data.random_split(trainset, [49000, 1000])
+    # Split training set into sets for training and validation for optimizing processes
+    if setup == "optim":
+        logger.info("Splitting trainset into train and validation")
+        trainset, validationset = torch.utils.data.random_split(trainset, [49000, 1000])
+    else:
+        validationset = None
 
     testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
     

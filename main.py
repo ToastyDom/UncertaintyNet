@@ -1,19 +1,16 @@
 import argparse
+import warnings
+from datetime import datetime
+
+import optuna
+import torch
 #import logging
 from loguru import logger
-import torch
-from datetime import datetime
-import optuna
-
-from utils.datasets import get_cifar_10
-from utils.models import get_ResNet50, get_ResNet18
 
 from training import TrainUncertainty
+from utils.datasets import get_cifar_10
+from utils.models import get_ResNet18, get_ResNet50
 
-
-
-
-import warnings
 warnings.filterwarnings("ignore", category=UserWarning) 
 
 
@@ -110,6 +107,13 @@ def parse_args():
         required=False
     )
     parser.add_argument(
+        "--seed",
+        "-seed",
+        type=int,
+        default=0,
+        required=False
+    )
+    parser.add_argument(
         "--log-level",
         type=str,
         default="TRACE",
@@ -157,16 +161,20 @@ def main(args):
                 "batchsize": batchsize}
 
 
+    # torch.manual_seed(0)
+    # np.random.seed(0)
+
+
     # Select Device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Select Dataset
     logger.info("Loading Dataset")
     if dataset == "cifar10":
-        trainset, validationset, testset, num_classes = get_cifar_10()
+        trainset, validationset, testset, num_classes = get_cifar_10(setup)
     else:
         logger.warning("No dataset selected. Will select Cifar10")
-        trainset, validationset, testset, num_classes = get_cifar_10()
+        trainset, validationset, testset, num_classes = get_cifar_10(setup)
 
     # Select Model
     logger.info("Loading Model")
@@ -209,7 +217,7 @@ def main(args):
         logger.info("Starting Optimiation")
         pipeline.hypersearch = True
         
-        r = pipeline.hyper_optimizer(num_trials=epochs)
+        history = pipeline.hyper_optimizer(num_trials=epochs)
        
 
 

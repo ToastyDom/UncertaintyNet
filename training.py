@@ -6,7 +6,7 @@ from tqdm import tqdm
 import json
 import shutil
 import torch.nn.functional as F
-from utils.evaluation import ece_score, auroc_score, specificity_score, balanced_acc_score, calibration_error, top_calibration_error #, sensitivity_score
+from utils.evaluation import ece_score, auroc_score, sensitivity_specificity, balanced_acc_score, calibration_error, top_calibration_error, brier_multi #, sensitivity_score
 import matplotlib.pyplot as plt
 import optuna
 import torch.optim as optim
@@ -166,12 +166,14 @@ class TrainUncertainty:
         self.history = {
             'training_loss': [],
             'training_accuracy': [],
-            'validation_loss': [],
+            'testing_loss': [],
             'ece': [],
+            'calib_error': [],
+            'top_calib_error': [],
             'auroc': [],
             'sensitivity': [],
             'specificity': [],
-            'validation_accuracy': [],
+            'testing_accuracy': [],
             'balanced_accuracy': []
         }
 
@@ -181,11 +183,11 @@ class TrainUncertainty:
     def objective(self, trial):
 
         self.optim_params = {
-                'learning_rate': trial.suggest_float('learning_rate', 1e-6, 1e-1),
+                'learning_rate': trial.suggest_log('learning_rate', 1e-6, 1e-1),
                 'optimizer': trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
                 'batchsize': trial.suggest_categorical("batchsize", [32,64,128,256,512]),
                 'momentum': trial.suggest_float("momentum", 0.0, 1.0, step=0.1),
-                'weight_dacay': trial.suggest_float('weight_dacay', 1e-6, 1e-1)
+                'weight_dacay': trial.suggest_log('weight_dacay', 1e-6, 1e-1)
                 }
     
         
@@ -283,13 +285,6 @@ class TrainUncertainty:
         all_labels = np.array([],dtype=int)
         all_labels_tf = []
         all_outputs = []
-        all_ece = []
-        all_calib = []
-        all_top_calib = []
-        all_auroc = []
-        all_spec = []
-        all_senv = []
-
 
         if self.hypersearch == True:
             this_dataloader = self.valloader
@@ -329,15 +324,6 @@ class TrainUncertainty:
                     labels = labels.cpu()
                     all_predicitons = np.concatenate((all_predicitons,pred_labels))
                     all_labels = np.concatenate((all_labels,labels))
-                    
-                    # Get calibration errros:
-                    ece = ece_score(prob_output, np.array(labels))
-                    calib_error = calibration_error(prob_output, np.array(labels))
-                    top_calib_error = calibration_error(prob_output, np.array(labels))
-                    
-                    all_ece.append(ece)
-                    all_calib.append(calib_error)
-                    all_top_calib.append(top_calib_error)
 
                     
                     if all_outputs == []:
@@ -354,21 +340,16 @@ class TrainUncertainty:
      
         
         
-        # Calculate Errros:
-        avg_ece = np.mean(all_ece)
-        avg_calib = np.mean(all_calib)
-        avg_top_calib = np.mean(all_top_calib)
 
-        # Calculate Errors new
+
+        # Calculate Errors 
         all_preds = F.softmax(all_outputs, dim=1).cpu().data.numpy()
-        print(all_preds.shape)
-        print(np.array(all_labels).shape)
         ece = ece_score(all_preds, np.array(all_labels))
         calib_error = calibration_error(all_preds, np.array(all_labels))
-        top_calib_error = calibration_error(all_preds, np.array(all_labels))
+        top_calib_error = top_calibration_error(all_preds, np.array(all_labels))
+        brier = brier_multi(all_preds, np.array(all_labels), self.num_classes)
         
-        
-        # Valivation loss
+        # Validation loss
         running_validation_loss /= len(this_dataloader.dataset)
 
         # Accuracy
@@ -380,19 +361,14 @@ class TrainUncertainty:
         # AUROC
         auroc = auroc_score(all_outputs, all_labels_tf, self.num_classes)
 
-        # Specificity
-        specificity = specificity_score(all_outputs, all_labels_tf, self.num_classes)
+        # Specificity & Sensitivity
+        sensitivity, specificity = sensitivity_specificity(all_outputs, all_labels, self.num_classes)
 
-        # Sensitivity
-        sensitivity = 0
 
-        print(f'validation_loss: {running_validation_loss}')
-        #print(f'ece: {ece}')
-        print(f'avg_ece: {avg_ece}')
+        print(f'testing_loss: {running_validation_loss}')
         print(f'ece: {ece}')
-        print(f'avg_calib_error: {avg_calib}')
-        print(f'calib_errpr: {calib_error}')
-        print(f'avg_top_calib_error: {avg_top_calib}')
+        print(f'brier: {brier}')
+        print(f'calib_error: {calib_error}')
         print(f'top_calib_error: {top_calib_error}')
         print(f'specificity: {specificity}')
         print(f'sensitivity: {sensitivity}')
@@ -400,7 +376,7 @@ class TrainUncertainty:
         print(f'accuracy: {accuracy}')
         print(f'balanced_accuracy: {balanced_acc}')
 
-        return running_validation_loss, accuracy, ece, specificity, sensitivity, auroc, balanced_acc
+        return running_validation_loss, ece, calib_error, top_calib_error, specificity, sensitivity, auroc, accuracy, balanced_acc
 
 
     def plot(self):
@@ -567,10 +543,10 @@ class TrainUncertainty:
 
 
             ##############
-            # Validation #
+            # Testing #
             ##############
 
-            running_validation_loss, val_accuracy, ece, specificity, sensitivity, auroc, balanced_acc = self.test()
+            running_validation_loss, ece, calib_error, top_calib_error, specificity, sensitivity, auroc, test_accuracy, balanced_acc = self.test()
 
 
             ##############
@@ -578,18 +554,24 @@ class TrainUncertainty:
             ##############
            
             # Save state in history
-            self.history['validation_loss'].append(running_validation_loss)
-            self.history['validation_accuracy'].append(val_accuracy)
-            self.history['balanced_accuracy'].append(balanced_acc)
+            self.history['testing_loss'].append(running_validation_loss)
             self.history['ece'].append(ece)
-            self.history['auroc'].append(auroc)
-            self.history['sensitivity'].append(sensitivity)
+            self.history['calib_error'].append(calib_error)
+            self.history['top_calib_error'].append(top_calib_error)
             self.history['specificity'].append(specificity)
+            self.history['sensitivity'].append(sensitivity)
+            self.history['auroc'].append(auroc)
+            self.history['testing_accuracy'].append(test_accuracy)
+            self.history['balanced_accuracy'].append(balanced_acc)
+            
+            
+            
+            
 
             # Save training state
             log_time = self.settings["time"]
-            log_time = log_time.replace(":","-")
-            self.this_epoch = epoch + 1
+            log_time = log_time.replace(":", "-")
+            self.this_epoch += 1
             ensure_directory(f"checkpoints/{log_time}")
             self.model_path = f'checkpoints/{log_time}/model_{str(self.this_epoch)}.pt'
             self.best_path = f'checkpoints/{log_time}/best_model.pt'

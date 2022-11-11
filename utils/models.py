@@ -10,7 +10,7 @@ from torchvision.models import resnet50, ResNet50_Weights, resnet18, ResNet18_We
 
 def get_ResNet50(pretrained, num_classes, freeze="True"):
 
-    if pretrained:
+    if pretrained=="True":
         # Load model with weights
         logger.info("Fetching Model Weights")
         model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
