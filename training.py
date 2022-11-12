@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import optuna
 import torch.optim as optim
 from loguru import logger
+from utils.models import get_ResNet18, get_ResNet50
 
 
 """ 
@@ -186,6 +187,19 @@ class TrainUncertainty:
 
     def objective(self, trial):
 
+        
+        pretrained = self.settings["pretrained"]
+        freeze = self.settings["freeze"]
+        num_classes = self.num_classes
+        model = self.settings["model"]
+
+        if model == "resnet50":
+            logger.info("Loading ResNet50 new")
+            self.model = get_ResNet50(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
+        else:
+            logger.error("No model available")
+
+
         self.optim_params = {
                 'learning_rate': trial.suggest_float('learning_rate', 1e-6, 1e-1,log=True),
                 'optimizer': trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
@@ -195,7 +209,9 @@ class TrainUncertainty:
                 }
     
         
+        self.trial = trial
         accuracy = self.train(num_epochs=10)
+    
 
         return accuracy
 
@@ -461,10 +477,16 @@ class TrainUncertainty:
         # Initiate optimizer
         optimizer_name = self.optim_params['optimizer']
         if optimizer_name == "Adam":
+            logger.info("Loading Adam")
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.optim_params['learning_rate'], betas=(0.9, 0.999), eps=1e-08, weight_decay=self.optim_params['weight_dacay'], amsgrad=False)
         elif optimizer_name == "SGD":
+            logger.info("Loading SGD")
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.optim_params['learning_rate'], momentum=self.optim_params['momentum'])
+        elif optimizer_name == "RMSprop":
+            logger.info("Loading RMSprop")
+            self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=self.optim_params['learning_rate'])
         else:
+            logger.error("No optimizer found")
             self.optimizer = getattr(optim, self.optim_params['optimizer'])(self.model.parameters(), lr= self.optim_params['learning_rate'])
         
         # Initiate Dataloader
@@ -605,13 +627,24 @@ class TrainUncertainty:
         backup_logs(self.settings)
 
         self.scheduler.step()
+
+        # If we use optuna, prune if bad
+        if self.hypersearch == True:
+            logger.info("Check for pruning")
+            self.trial.report(balanced_acc, epoch)
+
+            # Handle pruning based on the intermediate value.
+            if self.trial.should_prune():
+                raise optuna.TrialPruned()
+
+
         return balanced_acc
 
 
     def hyper_optimizer(self, num_trials):
-        self.valloader = torch.utils.data.DataLoader(self.validationset, batch_size=self.batch_size, shuffle=True, num_workers=2)
         
-        study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler())
+        
+        study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.MedianPruner())
         study.optimize(self.objective, n_trials=num_trials)
         best_trial = study.best_trial
 

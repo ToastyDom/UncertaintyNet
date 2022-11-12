@@ -179,55 +179,68 @@ def main(args):
     # Select Model
     logger.info("Loading Model")
     if model == "resnet50":
-        torchmodel = get_ResNet50(pretrained=True, freeze=freeze, num_classes=num_classes)
+        torchmodel = get_ResNet50(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
     elif model == "resnet18":
-        torchmodel = get_ResNet18(pretrained=True, freeze=freeze, num_classes=num_classes)
+        torchmodel = get_ResNet18(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
     else:
         logger.warning("No model selected. Will select ResNet50")
         torchmodel = get_ResNet50(pretrained=True,freeze=freeze, num_classes=num_classes)
 
 
 
-    # Start Pipeline
-    logger.info("Starting Pipeline")
-    pipeline = TrainUncertainty(settings=settings,
-                                device=device, 
-                                model=torchmodel,
-                                num_classes=num_classes, 
-                                trainset=trainset,
-                                validationset=validationset, 
-                                testset=testset, 
-                                batch_size=batchsize,
-                                optimizer=optimizer,
-                                learningrate=learningrate)
 
-
-
-    if checkpoint is not None:
-        logger.info("Loading Checkpoint")
-        pipeline.load(checkpoint)
-
-
-    if setup == "train":
-        logger.info("Starting Training")
-        history = pipeline.train(num_epochs = epochs)
-
-
-    elif setup == "optim":
+    if setup == "optim":
         logger.info("Starting Optimiation")
+        pipeline = TrainUncertainty(settings=settings,
+                                    device=device, 
+                                    model=torchmodel,
+                                    num_classes=num_classes, 
+                                    trainset=trainset,
+                                    validationset=validationset, 
+                                    testset=testset, 
+                                    batch_size=None,
+                                    optimizer=None,
+                                    learningrate=None)
         pipeline.hypersearch = True
-        
+            
         history = pipeline.hyper_optimizer(num_trials=epochs)
-       
+        pass
+    else:
+        # Start Pipeline
+        logger.info("Starting Pipeline")
+        pipeline = TrainUncertainty(settings=settings,
+                                    device=device, 
+                                    model=torchmodel,
+                                    num_classes=num_classes, 
+                                    trainset=trainset,
+                                    validationset=validationset, 
+                                    testset=testset, 
+                                    batch_size=batchsize,
+                                    optimizer=optimizer,
+                                    learningrate=learningrate)
 
 
-    elif setup == "test":
-        logger.info("Starting Testing")
-        history = pipeline.test()
 
-    elif setup == "plot":
-        logger.info("Starting Plotting")
-        pipeline.plot()
+        if checkpoint is not None:
+            logger.info("Loading Checkpoint")
+            pipeline.load(checkpoint)
+
+
+        elif setup == "train":
+            logger.info("Starting Training")
+            history = pipeline.train(num_epochs = epochs)
+
+            
+        
+
+
+        elif setup == "test":
+            logger.info("Starting Testing")
+            history = pipeline.test()
+
+        elif setup == "plot":
+            logger.info("Starting Plotting")
+            pipeline.plot()
 
 
 
