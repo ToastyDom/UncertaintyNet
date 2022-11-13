@@ -199,6 +199,8 @@ class TrainUncertainty:
         else:
             logger.error("No model available")
 
+        # Model to Device
+        self.model.to(self.device)
 
         self.optim_params = {
                 'learning_rate': trial.suggest_float('learning_rate', 1e-6, 1e-1,log=True),
