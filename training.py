@@ -79,6 +79,7 @@ def update_logs(settings, best=False, optim_data={}):
             log_json[log_time]["best_config"]["this_test_accuracy"] = settings["history"]["testing_accuracy"][-1]
             log_json[log_time]["best_config"]["this_balanced_test_accuracy"] = settings["history"]["balanced_accuracy"][-1]
             log_json[log_time]["best_config"]["this_ece"] = settings["history"]["ece"][-1]
+            log_json[log_time]["best_config"]["this_nll"] = settings["history"]["nll"][-1]
             log_json[log_time]["best_config"]["this_brier"] = settings["history"]["brier"][-1]
             log_json[log_time]["best_config"]["this_calib_error"] = settings["history"]["calib_error"][-1]
             log_json[log_time]["best_config"]["this_top_calib_error"] = settings["history"]["top_calib_error"][-1]
@@ -154,6 +155,9 @@ class TrainUncertainty:
         self.criterion = nn.CrossEntropyLoss()
 
 
+        self.nll_loss = nn.NLLLoss()
+
+
         # Select Scheduler
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
 
@@ -172,6 +176,7 @@ class TrainUncertainty:
             'training_accuracy': [],
             'testing_loss': [],
             'ece': [],
+            'nll': [],
             'brier': [],
             'calib_error': [],
             'top_calib_error': [],
@@ -301,6 +306,7 @@ class TrainUncertainty:
 
         # logs
         running_validation_loss = 0.0
+        running_nll_loss = 0.0
         num_correct = 0
         num_examples = 0
         all_predicitons = np.array([],dtype=int)
@@ -315,6 +321,8 @@ class TrainUncertainty:
             this_dataloader = self.testloader
             logger.info("Using Testingset")
 
+        
+
         with torch.no_grad():
             for iteration, (inputs, labels) in tqdm(enumerate(this_dataloader), bar_format=bar_format, total=len(this_dataloader)):
 
@@ -327,9 +335,11 @@ class TrainUncertainty:
 
                     # Calculate loss
                     loss = self.criterion(outputs,labels)
+                    nll_loss = self.nll_loss(outputs,labels)
 
                     # Update loss
                     running_validation_loss += loss.data.item() * inputs.size(0)
+                    running_nll_loss += nll_loss.data.item() * inputs.size(0)
 
                     # Predicted Labels
                     prob_output = F.softmax(outputs, dim=1).cpu().data.numpy()  # prediction probability, Eigentlich auch confidence
@@ -370,6 +380,7 @@ class TrainUncertainty:
         calib_error = calibration_error(all_preds, np.array(all_labels))
         top_calib_error = top_calibration_error(all_preds, np.array(all_labels))
         brier = brier_multi(all_preds, np.array(all_labels), self.num_classes)
+        running_nll_loss /= len(this_dataloader.dataset)
         
         # Validation loss
         running_validation_loss /= len(this_dataloader.dataset)
@@ -389,6 +400,7 @@ class TrainUncertainty:
 
         print(f'testing_loss: {running_validation_loss}')
         print(f'ece: {ece}')
+        print(f"nll: {running_nll_loss}")
         print(f'brier: {brier}')
         print(f'calib_error: {calib_error}')
         print(f'top_calib_error: {top_calib_error}')
@@ -398,7 +410,7 @@ class TrainUncertainty:
         print(f'accuracy: {accuracy}')
         print(f'balanced_accuracy: {balanced_acc}')
 
-        return running_validation_loss, ece, brier, calib_error, top_calib_error, specificity, sensitivity, auroc, accuracy, balanced_acc
+        return running_validation_loss, ece, running_nll_loss, brier, calib_error, top_calib_error, specificity, sensitivity, auroc, accuracy, balanced_acc
 
 
     def plot(self):
@@ -577,7 +589,7 @@ class TrainUncertainty:
             # Testing #
             ##############
 
-            running_validation_loss, ece, brier, calib_error, top_calib_error, specificity, sensitivity, auroc, test_accuracy, balanced_acc = self.test()
+            running_validation_loss, ece, nll, brier, calib_error, top_calib_error, specificity, sensitivity, auroc, test_accuracy, balanced_acc = self.test()
 
 
             ##############
@@ -587,6 +599,7 @@ class TrainUncertainty:
             # Save state in history
             self.history['testing_loss'].append(running_validation_loss)
             self.history['ece'].append(ece)
+            self.history['nll'].append(nll)
             self.history['brier'].append(brier)
             self.history['calib_error'].append(calib_error)
             self.history['top_calib_error'].append(top_calib_error)

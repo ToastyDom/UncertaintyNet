@@ -167,6 +167,8 @@ def main(args):
 
     # Select Device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    logger.info("Device: ", device)
+    print(device)
 
     # Select Dataset
     logger.info("Loading Dataset")
@@ -226,7 +228,7 @@ def main(args):
             pipeline.load(checkpoint)
 
 
-        elif setup == "train":
+        if setup == "train":
             logger.info("Starting Training")
             history = pipeline.train(num_epochs = epochs)
 
