@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 #SBATCH --time=0-01:20:00 # maximum allocated time
 #SBATCH --job-name=SimpleTest # name of the job
 #SBATCH --partition=gpu-12h # which partition the job should be scheduled on
