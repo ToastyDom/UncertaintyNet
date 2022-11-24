@@ -21,9 +21,7 @@ def get_free_gpu_idx():
     memory_available = [int(x.split()[2]) for x in open("tmp", "r").readlines()]
     return np.argmax(memory_available)
 
-gpu_idx = get_free_gpu_idx()
-print("Using GPU #%s" % gpu_idx)
-os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
+
 
 
 
@@ -143,6 +141,10 @@ def main(args):
     Args:
         args (parser): parser arguments
     """
+
+    gpu_idx = get_free_gpu_idx()
+    print("Using GPU #%s" % gpu_idx)
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
 
     setup = args.setup
     dataset = args.dataset

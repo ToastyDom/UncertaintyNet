@@ -7,7 +7,6 @@
 #SBATCH --gres=gpu:1
 #SBATCH -w gpu[26-30]
 
-
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
 
