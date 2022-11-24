@@ -5,7 +5,7 @@
 #SBATCH --output=./TrainResNet50_Scratch-%j.out
 #SBATCH --error=./TrainResNet50_Scratch-%j.err
 #SBATCH --gres=gpu:1
-#SBATCH -w gpu[26-30]
+##SBATCH -w gpu[26-30]  Only define nodes inside that partition
 
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
