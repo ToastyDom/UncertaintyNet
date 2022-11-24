@@ -1,10 +1,12 @@
 #!/bin/bash
-#SBATCH --time=0-01:20:00 # maximum allocated time
-#SBATCH --job-name=SimpleTest # name of the job
+#SBATCH --time=24:00:00 # maximum allocated time
+#SBATCH --job-name=TrainResNet50_Scratch # name of the job
 #SBATCH --partition=gpu-12h # which partition the job should be scheduled on
-#SBATCH --output=./SimpleTest-%j.out
-#SBATCH --error=./SimpleTest-%j.err
-#SBATCH -w gpu[25-28]
+#SBATCH --output=./TrainResNet50_Scratch-%j.out
+#SBATCH --error=./TrainResNet50_Scratch-%j.err
+#SBATCH --gres=gpu:1
+#SBATCH -w gpu[26-30]
+
 
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
