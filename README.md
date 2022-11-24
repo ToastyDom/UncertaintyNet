@@ -12,4 +12,5 @@ Repository for my Masters thesis!!!
 1. `conda create -n myenv`
 2. `conda install pip`
 3. `conda install pytorch torchvision torchaudio cudatoolkit=11.1 -c pytorch-lts -c nvidia`
-4. `pip install -r requirements.txt`
+4. `pip install --upgrade torch torchvision`
+5. `pip install -r requirements.txt`
