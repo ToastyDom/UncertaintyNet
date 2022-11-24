@@ -93,6 +93,10 @@ def update_logs(settings, best=False, optim_data={}):
         json.dump(log_json, json_file, indent=4)
         json_file.truncate()
 
+        print("")
+        print("### Updated Logs ###")
+        print("")
+
 
 
 def backup_logs(settings):
