@@ -22,7 +22,9 @@ def get_free_gpu_idx():
     return np.argmax(memory_available)
 
 
-
+gpu_idx = get_free_gpu_idx()
+print("Using GPU #%s" % gpu_idx)
+os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
 
 
 def parse_args():
