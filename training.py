@@ -159,7 +159,8 @@ class TrainUncertainty:
 
 
         # Select Scheduler
-        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
+        # self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
+        # self.scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, self.learningrate, epochs=epochs, steps_per_epoch=len(train_loader))
 
 
         # Initiate Dataloades
@@ -398,6 +399,7 @@ class TrainUncertainty:
         sensitivity, specificity = sensitivity_specificity(all_outputs, all_labels, self.num_classes)
 
 
+        
         print(f'testing_loss: {running_validation_loss}')
         print(f'ece: {ece}')
         print(f"nll: {running_nll_loss}")
@@ -409,6 +411,7 @@ class TrainUncertainty:
         print(f'auroc: {auroc}')
         print(f'accuracy: {accuracy}')
         print(f'balanced_accuracy: {balanced_acc}')
+        print("")
 
         return running_validation_loss, ece, running_nll_loss, brier, calib_error, top_calib_error, specificity, sensitivity, auroc, accuracy, balanced_acc
 
@@ -522,6 +525,8 @@ class TrainUncertainty:
             self.history: training history
         """
 
+        self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=num_epochs, steps_per_epoch=len(self.trainloader))
+
 
         if self.hypersearch == True:
             logger.info("Changing Dataset for Hyperparamter serach")
@@ -570,10 +575,13 @@ class TrainUncertainty:
                 # Store loss
                 running_training_loss += loss.item()
                 running_corrects += torch.sum(preds == labels.data)
+
+                print("Learning Rate Batch:", self.optimizer.param_groups[0]["lr"])
+                self.scheduler.step()
             
 
             # Print LR
-            print("Learning Rate:", self.optimizer.param_groups[0]["lr"])
+            print("Learning Rate Epoch:", self.optimizer.param_groups[0]["lr"])
 
             # Safe Training loss
             running_training_loss /= len(self.trainloader.dataset)
@@ -641,7 +649,7 @@ class TrainUncertainty:
 
         backup_logs(self.settings)
 
-        self.scheduler.step()
+        # self.scheduler.step()
 
         # If we use optuna, prune if bad
         if self.hypersearch == True:

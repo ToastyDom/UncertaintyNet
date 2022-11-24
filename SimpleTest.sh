@@ -10,7 +10,7 @@
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
 
-python3 main.py -s train -m resnet50 -d cifar10 -e 25 -b 256 -o ADAM -lr 0.000210842377984626897 -f False -p False -t 'Test'
+python3 main.py -s train -m resnet50 -d cifar10 -e 25 -b 128 -o ADAM -lr 0.01 -f False -p False -t 'Training with settings from google'
 
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
