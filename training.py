@@ -62,6 +62,8 @@ def update_logs(settings, best=False, optim_data={}):
         log_json[log_time]["freeze"] = settings["freeze"]
         log_json[log_time]["dataset"] = settings["dataset"]
         log_json[log_time]["batchsize"] = settings["batchsize"]
+        log_json[log_time]["optimizer"] = settings["optimizer"]
+        log_json[log_time]["scheduler"] = settings["scheduler"]
         log_json[log_time]["current_epoch"] = settings["current_epoch"]
         log_json[log_time]["current_checkpoint"] = settings["current_checkpoint"]
         log_json[log_time]["best_checkpoint"] = settings["best_checkpoint"]
@@ -153,6 +155,10 @@ class TrainUncertainty:
         else:
             logger.warning("No Optimizer selected! And therefore no learningrate")
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
+
+
+        # Update Settings
+        self.settings["optimizer"] = str(self.optimizer)
 
 
         # Select Criterion
@@ -529,7 +535,9 @@ class TrainUncertainty:
             self.history: training history
         """
 
-        self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=num_epochs, steps_per_epoch=len(self.trainloader))
+        # self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=num_epochs, steps_per_epoch=len(self.trainloader))
+        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
+        self.settings["scheduler"] = str(self.scheduler)
 
 
         if self.hypersearch == True:
@@ -580,12 +588,13 @@ class TrainUncertainty:
                 running_training_loss += loss.item()
                 running_corrects += torch.sum(preds == labels.data)
 
-                print("Learning Rate Batch:", self.optimizer.param_groups[0]["lr"])
-                self.scheduler.step()
+                #print("Learning Rate Batch:", self.optimizer.param_groups[0]["lr"])
+                #self.scheduler.step()
             
 
             # Print LR
             print("Learning Rate Epoch:", self.optimizer.param_groups[0]["lr"])
+            self.scheduler.step()
 
             # Safe Training loss
             running_training_loss /= len(self.trainloader.dataset)

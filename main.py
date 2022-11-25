@@ -22,9 +22,9 @@ def get_free_gpu_idx():
     return np.argmax(memory_available)
 
 
-gpu_idx = get_free_gpu_idx()
-print("Using GPU #%s" % gpu_idx)
-os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
+# gpu_idx = get_free_gpu_idx()
+# print("Using GPU #%s" % gpu_idx)
+# os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
 
 
 def parse_args():
@@ -116,6 +116,13 @@ def parse_args():
         type=str,
         required=False
     )
+
+    parser.add_argument(
+        "--gpuserver",
+        "-g",
+        type=str,
+        required=False
+    )
     parser.add_argument(
         "--seed",
         "-seed",
@@ -131,6 +138,8 @@ def parse_args():
         help="Log level.",
         required=False,
     )
+
+
     
     return parser.parse_args()
 
@@ -144,9 +153,10 @@ def main(args):
         args (parser): parser arguments
     """
 
-    gpu_idx = get_free_gpu_idx()
-    print("Using GPU #%s" % gpu_idx)
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
+    if args.gpuserver == "True":
+        gpu_idx = get_free_gpu_idx()
+        print("Using GPU #%s" % gpu_idx)
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
 
     setup = args.setup
     dataset = args.dataset
