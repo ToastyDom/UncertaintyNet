@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --time=24:00:00 # maximum allocated time
-#SBATCH --job-name=TrainResNet50_Scratch # name of the job
+#SBATCH --job-name=Trainbatch_301122 # name of the job
 #SBATCH --partition=gpu-12h # which partition the job should be scheduled on
-#SBATCH --output=./TrainResNet50_Scratch-%j.out
-#SBATCH --error=./TrainResNet50_Scratch-%j.err
+#SBATCH --output=./Trainbatch_301122-%j.out
+#SBATCH --error=./Trainbatch_301122-%j.err
 #SBATCH --gres=gpu:1
 ##SBATCH -w gpu[26-30]  Only define nodes inside that partition
 
