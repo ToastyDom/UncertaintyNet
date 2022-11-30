@@ -535,8 +535,8 @@ class TrainUncertainty:
             self.history: training history
         """
 
-        # self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=num_epochs, steps_per_epoch=len(self.trainloader))
-        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
+        self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=num_epochs, steps_per_epoch=len(self.trainloader))
+        #self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
         self.settings["scheduler"] = str(self.scheduler)
 
 

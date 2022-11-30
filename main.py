@@ -11,7 +11,7 @@ from loguru import logger
 
 from training import TrainUncertainty
 from utils.datasets import get_cifar_10
-from utils.models import get_ResNet18, get_ResNet50
+from utils.models import get_ResNet101, get_ResNet50, get_efficientnet
 
 warnings.filterwarnings("ignore", category=UserWarning) 
 
@@ -46,7 +46,7 @@ def parse_args():
         type=str,
         help="Select a model which should be trained",
         default="resnet50",
-        choices=["resnet50", "resnet18"]
+        choices=["resnet50", "resnet101", "efficientnet"]
     )
 
     parser.add_argument(
@@ -206,8 +206,10 @@ def main(args):
     logger.info("Loading Model")
     if model == "resnet50":
         torchmodel = get_ResNet50(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
-    elif model == "resnet18":
-        torchmodel = get_ResNet18(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
+    elif model == "resnet101":
+        torchmodel = get_ResNet101(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
+    elif model == "efficientnet":
+        torchmodel = get_efficientnet(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
     else:
         logger.warning("No model selected. Will select ResNet50")
         torchmodel = get_ResNet50(pretrained=True,freeze=freeze, num_classes=num_classes)
