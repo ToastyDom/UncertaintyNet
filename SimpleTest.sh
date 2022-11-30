@@ -10,7 +10,12 @@
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
 
-python3 main.py -s train -m resnet50 -d cifar10 -e 25 -b 128 -o ADAM -lr 0.01 -f False -p False -g "True" -t 'Training with settings from google'
+python3 main.py -s train -m resnet50 -d cifar10 -e 40 -b 128 -o ADAM -lr 0.01 -f False -p False -g "True" -t 'Training ResNet50 from scratch on Cifar10'
+python3 main.py -s train -m resnet50 -d cifar10 -e 40 -b 128 -o ADAM -lr 0.01 -f False -p True -g "True" -t 'Training ResNet50 pretrained on Cifar10'
+
+python3 main.py -s train -m resnet101 -d cifar10 -e 40 -b 128 -o ADAM -lr 0.01 -f False -p False -g "True" -t 'Training ResNet101 from scratch on Cifar10'
+python3 main.py -s train -m resnet101 -d cifar10 -e 40 -b 128 -o ADAM -lr 0.01 -f False -p True -g "True" -t 'Training ResNet101 pretrained on Cifar10'
+
 ##python3 main.py -s train -m resnet50 -d cifar10 -e 25 -b 128 -o ADAM -lr 0.01 -f False -p False -t 'Training with settings from google'
 
 dt=$(date '+%d/%m/%Y %H:%M:%S');
