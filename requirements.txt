@@ -6,3 +6,4 @@ sklearn
 optuna
 tensorflow
 uncertainty-calibration
+timm

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import optuna
 import torch.optim as optim
 from loguru import logger
-from utils.models import get_ResNet18, get_ResNet50
+from utils.models import get_ResNet50
 
 
 """ 

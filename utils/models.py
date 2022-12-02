@@ -4,6 +4,7 @@ import torchvision
 import torch.nn as nn
 from loguru import logger
 from torchvision.models import resnet50, ResNet50_Weights, resnet18, ResNet18_Weights, resnet101, ResNet101_Weights, efficientnet_b6, EfficientNet_B6_Weights
+import timm
 
 
 # https://www.kaggle.com/code/pmigdal/transfer-learning-with-resnet-50-in-pytorch
@@ -99,34 +100,54 @@ def get_efficientnet(pretrained, num_classes, freeze="True"):
 
 
 
-def get_ResNet18(pretrained, num_classes, freeze = True, trained_weights=None):
-    pass
+def get_vit(pretrained, num_classes, freeze="True"):
 
-    # if pretrained:
+    if pretrained=="True":
+        # Load model with weights
+        logger.info("Fetching Model Weights for ViT")
+        model = timm.create_model('vit_base_patch16_224', pretrained=True, num_classes=num_classes)
 
-    #     # Load model with weights
-    #     model = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
-
-    #     # New classifier
-    #     num_in_feats = model.fc.in_features
-    #     model.fc = nn.Linear(num_in_feats, num_classes)
-
-    #     if freeze==True:
-
-    #         logger.info("Freezing backbone")
-
-    #         """Freezing Layers"""
-    #         for param in model.parameters():
-    #             param.requires_grad = False
-    #         """Unfreese fc layer"""
-    #         for param in model.fc.parameters():
-    #             param.requires_grad = True
+    else:
+        # Load model without weights
+        logger.info("Not pretrained for ViT")
+        model = timm.create_model('vit_base_patch16_224', num_classes=num_classes)
 
 
-    # else:
-    #     weight_file = trained_weights
-    #     model = 0
-    #     print("TO IMPLEMENT")
+    if freeze=="True":
+        logger.info("Freezing backbone")
+        """Freezing Layers"""
+        for param in model.parameters():
+            param.requires_grad = False
+        """Unfreese fc layer"""
+        for param in model.fc.parameters():
+            param.requires_grad = True
+
+    return model
+    
 
 
-    # return model
+def get_beit(pretrained, num_classes, freeze="True"):
+
+    if pretrained=="True":
+        # Load model with weights
+        logger.info("Fetching Model Weights for BEiT")
+        model = timm.create_model('beit_base_patch16_224', pretrained=True, num_classes=num_classes)
+
+    else:
+        # Load model without weights
+        logger.info("Not pretrained for BEiT")
+        model = timm.create_model('beit_base_patch16_224', num_classes=num_classes)
+
+
+    if freeze=="True":
+        logger.info("Freezing backbone")
+        """Freezing Layers"""
+        for param in model.parameters():
+            param.requires_grad = False
+        """Unfreese fc layer"""
+        for param in model.fc.parameters():
+            param.requires_grad = True
+
+    return model
+
+
