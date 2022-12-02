@@ -49,7 +49,7 @@ def get_ResNet101(pretrained, num_classes, freeze="True"):
     else:
         # Load model without weights
         logger.info("Not pretrained for 101")
-        model = resnet50()
+        model = resnet101()
 
 
     # New classifier
@@ -84,8 +84,9 @@ def get_efficientnet(pretrained, num_classes, freeze="True"):
 
 
     # New classifier
-    num_in_feats = model.fc.in_features
-    model.fc = nn.Linear(num_in_feats, num_classes)
+    #num_in_feats = model.fc.in_features
+    model.classifier = nn.Sequential(nn.Dropout(p=0.5, inplace=True),
+                                    nn.Linear(2304, num_classes, bias=True))
 
     if freeze=="True":
         logger.info("Freezing backbone")
@@ -93,7 +94,7 @@ def get_efficientnet(pretrained, num_classes, freeze="True"):
         for param in model.parameters():
             param.requires_grad = False
         """Unfreese fc layer"""
-        for param in model.fc.parameters():
+        for param in model.classifier.parameters():
             param.requires_grad = True
 
     return model
