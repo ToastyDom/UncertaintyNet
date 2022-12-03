@@ -16,10 +16,15 @@ from utils.models import get_ResNet101, get_ResNet50, get_efficientnet, get_vit,
 warnings.filterwarnings("ignore", category=UserWarning) 
 
 def get_free_gpu_idx():
-    """Get the index of the GPU with current lowest memory usage."""
-    os.system("nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp")
+    """Get the index of the GPU with current lowest memory usage.
+    Update:
+    Instead of free memory we should use the used memory and instead of atgmax we should use argmin 
+    """
+
+    os.system("nvidia-smi -q -d Memory |grep -A4 GPU|grep Used >tmp")
     memory_available = [int(x.split()[2]) for x in open("tmp", "r").readlines()]
-    return np.argmax(memory_available)
+
+    return np.argmin(memory_available)
 
 
 # gpu_idx = get_free_gpu_idx()
@@ -157,6 +162,9 @@ def main(args):
         gpu_idx = get_free_gpu_idx()
         print("Using GPU #%s" % gpu_idx)
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
+
+
+        
 
     setup = args.setup
     dataset = args.dataset
