@@ -10,7 +10,7 @@ import torch
 from loguru import logger
 
 from training import TrainUncertainty
-from utils.datasets import get_cifar_10
+from utils.datasets import get_cifar_10, get_cifar_10_imbalanced, get_cifar_10_label_noise, get_cifar_10_scarcity, get_cifar_10_scarcity_ib
 from utils.models import get_ResNet101, get_ResNet50, get_efficientnet, get_vit, get_beit
 
 warnings.filterwarnings("ignore", category=UserWarning) 
@@ -21,9 +21,9 @@ def get_free_gpu_idx():
     Instead of free memory we should use the used memory and instead of atgmax we should use argmin 
     """
 
+    # # New function
     # os.system("nvidia-smi -q -d Memory |grep -A4 GPU|grep Used >tmp")
     # memory_available = [int(x.split()[2]) for x in open("tmp", "r").readlines()]
-
     # return np.argmin(memory_available)
 
     os.system("nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp")
@@ -81,7 +81,7 @@ def parse_args():
         type=str,
         help="Training on which dataset",
         default="Cifar10",
-        choices=["cifar10", "mnist"]
+        choices=["cifar10", "cifar10_im", "cifar10_ln", "cifar10_s", "cifar10_sib"]
     )
     parser.add_argument(
         "--epochs",
@@ -211,6 +211,14 @@ def main(args):
     logger.info("Loading Dataset")
     if dataset == "cifar10":
         trainset, validationset, testset, num_classes = get_cifar_10(setup)
+    elif dataset == "cifar10_im":
+        trainset, validationset, testset, num_classes = get_cifar_10_imbalanced(setup)
+    elif dataset == "cifar10_ln":
+        trainset, validationset, testset, num_classes = get_cifar_10_label_noise(setup)
+    elif dataset == "cifar10_s":
+        trainset, validationset, testset, num_classes = get_cifar_10_scarcity(setup)
+    elif dataset == "cifar10_sib":
+         trainset, validationset, testset, num_classes = get_cifar_10_scarcity_ib(setup)
     else:
         logger.warning("No dataset selected. Will select Cifar10")
         trainset, validationset, testset, num_classes = get_cifar_10(setup)
