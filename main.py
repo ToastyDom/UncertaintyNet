@@ -21,14 +21,14 @@ def get_free_gpu_idx():
     Instead of free memory we should use the used memory and instead of atgmax we should use argmin 
     """
 
-    # # New function
-    # os.system("nvidia-smi -q -d Memory |grep -A4 GPU|grep Used >tmp")
-    # memory_available = [int(x.split()[2]) for x in open("tmp", "r").readlines()]
-    # return np.argmin(memory_available)
-
-    os.system("nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp")
+    # New function
+    os.system("nvidia-smi -q -d Memory |grep -A4 GPU|grep Used >tmp")
     memory_available = [int(x.split()[2]) for x in open("tmp", "r").readlines()]
-    return np.argmax(memory_available)
+    return np.argmin(memory_available)
+
+    # os.system("nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp")
+    # memory_available = [int(x.split()[2]) for x in open("tmp", "r").readlines()]
+    # return np.argmax(memory_available)
 
 
 

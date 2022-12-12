@@ -232,7 +232,7 @@ def get_cifar_10_label_noise(setup):
 
     # Implement label noise
     for i in range(len(trainset)):
-        if torch.rand(1)<0.1:  # with a probability of 10%
+        if torch.rand(1)<0.2:  # with a probability of 10%
             trainset[i][1] = (trainset[i][1] + torch.randint(1,9, (1,))) % 10
 
 
@@ -247,7 +247,7 @@ def get_cifar_10_label_noise(setup):
 
     # Implement label noise
     for i in range(len(testset)):
-        if torch.rand(1)<0.1:  # with a probability of 10%
+        if torch.rand(1)<0.2:  # with a probability of 10%
             testset[i][1] = (testset[i][1] + torch.randint(1,9, (1,))) % 10
     
     num_classes = 10
