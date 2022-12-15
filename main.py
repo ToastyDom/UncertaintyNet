@@ -3,7 +3,7 @@ import warnings
 from datetime import datetime
 import os
 import numpy as np
-
+import random
 import optuna
 import torch
 #import logging
@@ -13,7 +13,12 @@ from training import TrainUncertainty
 from utils.datasets import get_cifar_10, get_cifar_10_imbalanced, get_cifar_10_label_noise, get_cifar_10_scarcity, get_cifar_10_scarcity_ib
 from utils.models import get_ResNet101, get_ResNet50, get_efficientnet, get_vit, get_beit
 
-warnings.filterwarnings("ignore", category=UserWarning) 
+warnings.filterwarnings("ignore", category=UserWarning)
+
+# Set random seeds
+random.seed(10)
+np.random.seed(10)
+torch.manual_seed(10)
 
 def get_free_gpu_idx():
     """Get the index of the GPU with current lowest memory usage.
@@ -251,7 +256,7 @@ def main(args):
                                     trainset=trainset,
                                     validationset=validationset, 
                                     testset=testset, 
-                                    batch_size=None,
+                                    batch_size=batchsize,
                                     optimizer=None,
                                     learningrate=None)
         pipeline.hypersearch = True

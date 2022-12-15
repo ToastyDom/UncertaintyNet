@@ -12,6 +12,7 @@ import optuna
 import torch.optim as optim
 from loguru import logger
 from utils.models import get_ResNet50
+from datetime import datetime
 
 
 """ 
@@ -88,6 +89,27 @@ def update_logs(settings, best=False, optim_data={}):
             log_json[log_time]["best_config"]["this_auroc"] = settings["history"]["auroc"][-1]
             log_json[log_time]["best_config"]["this_sensitivty"] = settings["history"]["sensitivity"][-1]
             log_json[log_time]["best_config"]["this_specificity"] = settings["history"]["specificity"][-1]
+
+
+        # Create a dict for current status:
+        if "current_config" not in log_json[log_time]:
+            log_json[log_time]["current_config"] = {}
+
+        log_json[log_time]["current_config"]["this_epoch"] = settings["current_epoch"]
+        log_json[log_time]["current_config"]["this_train_accuracy"] = settings["history"]["training_accuracy"][-1]
+        log_json[log_time]["current_config"]["this_test_accuracy"] = settings["history"]["testing_accuracy"][-1]
+        log_json[log_time]["current_config"]["this_balanced_test_accuracy"] = settings["history"]["balanced_accuracy"][-1]
+        log_json[log_time]["current_config"]["this_ece"] = settings["history"]["ece"][-1]
+        log_json[log_time]["current_config"]["this_nll"] = settings["history"]["nll"][-1]
+        log_json[log_time]["current_config"]["this_brier"] = settings["history"]["brier"][-1]
+        log_json[log_time]["current_config"]["this_calib_error"] = settings["history"]["calib_error"][-1]
+        log_json[log_time]["current_config"]["this_top_calib_error"] = settings["history"]["top_calib_error"][-1]
+        log_json[log_time]["current_config"]["this_auroc"] = settings["history"]["auroc"][-1]
+        log_json[log_time]["current_config"]["this_sensitivty"] = settings["history"]["sensitivity"][-1]
+        log_json[log_time]["current_config"]["this_specificity"] = settings["history"]["specificity"][-1]
+
+
+
 
     # save changes
     with open("logs/training_logs.json", "w") as json_file:
@@ -199,39 +221,6 @@ class TrainUncertainty:
         }
 
         ensure_directory("checkpoints")
-
-
-    def objective(self, trial):
-
-        
-        pretrained = self.settings["pretrained"]
-        freeze = self.settings["freeze"]
-        num_classes = self.num_classes
-        model = self.settings["model"]
-
-        if model == "resnet50":
-            logger.info("Loading ResNet50 new")
-            self.model = get_ResNet50(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
-        else:
-            logger.error("No model available")
-
-        # Model to Device
-        self.model.to(self.device)
-
-        self.optim_params = {
-                'learning_rate': trial.suggest_float('learning_rate', 1e-6, 1e-1,log=True),
-                'optimizer': trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
-                'batchsize': trial.suggest_categorical("batchsize", [32,64,128,256,512]),
-                'momentum': trial.suggest_float("momentum", 0.0, 1.0, step=0.1),
-                'weight_dacay': trial.suggest_float('weight_dacay', 1e-6, 1e-1, log=True)
-                }
-    
-        
-        self.trial = trial
-        accuracy = self.train(num_epochs=10)
-    
-
-        return accuracy
 
 
     def load(self, checkpoint):
@@ -497,33 +486,7 @@ class TrainUncertainty:
                 break
    
 
-    def set_hyperparameter(self):
 
-        #self.load("checkpoints/03.11.22 22-33-55/best_model.pt")
-
-        # Initiate optimizer
-        optimizer_name = self.optim_params['optimizer']
-        if optimizer_name == "Adam":
-            logger.info("Loading Adam")
-            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.optim_params['learning_rate'], betas=(0.9, 0.999), eps=1e-08, weight_decay=self.optim_params['weight_dacay'], amsgrad=False)
-        elif optimizer_name == "SGD":
-            logger.info("Loading SGD")
-            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.optim_params['learning_rate'], momentum=self.optim_params['momentum'])
-        elif optimizer_name == "RMSprop":
-            logger.info("Loading RMSprop")
-            self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=self.optim_params['learning_rate'])
-        else:
-            logger.error("No optimizer found")
-            self.optimizer = getattr(optim, self.optim_params['optimizer'])(self.model.parameters(), lr= self.optim_params['learning_rate'])
-        
-        # Initiate Dataloader
-        self.batch_size = self.optim_params['batchsize']
-        self.trainloader = torch.utils.data.DataLoader(self.trainset, batch_size=self.optim_params['batchsize'], shuffle=True, num_workers=2)
-        self.valloader = torch.utils.data.DataLoader(self.validationset, batch_size=self.optim_params['batchsize'], shuffle=True, num_workers=2)
-        self.testloader = torch.utils.data.DataLoader(self.testset, batch_size=self.optim_params['batchsize'], shuffle=True, num_workers=2)
-        
-        # Initiate Schedular
-        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
 
 
     def train(self, num_epochs):
@@ -535,14 +498,19 @@ class TrainUncertainty:
             self.history: training history
         """
 
-        self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=num_epochs, steps_per_epoch=len(self.trainloader))
-        #self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
-        self.settings["scheduler"] = str(self.scheduler)
-
+        
+        
 
         if self.hypersearch == True:
             logger.info("Changing Dataset for Hyperparamter serach")
             self.set_hyperparameter()
+        else:
+            self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=num_epochs, steps_per_epoch=len(self.trainloader))
+
+
+        
+        #self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
+        self.settings["scheduler"] = str(self.scheduler)
             
 
         # Set progress bar format.
@@ -675,6 +643,107 @@ class TrainUncertainty:
 
 
         return balanced_acc
+
+
+
+
+    def set_hyperparameter(self):
+
+        #self.load("checkpoints/03.11.22 22-33-55/best_model.pt")
+
+        # Initiate optimizer
+        optimizer_name = self.optim_params['optimizer']
+        self.learningrate = self.optim_params['learning_rate']
+        if optimizer_name == "Adam":
+            logger.info("Loading Adam")
+            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.optim_params['learning_rate'], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+        elif optimizer_name == "SGD":
+            logger.info("Loading SGD")
+            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.optim_params['learning_rate'], momentum=0.9, weight_decay=5e-4)
+        elif optimizer_name == "RMSprop":
+            logger.info("Loading RMSprop")
+            self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=self.optim_params['learning_rate'])
+        else:
+            logger.error("No optimizer found")
+            self.optimizer = getattr(optim, self.optim_params['optimizer'])(self.model.parameters(), lr= self.optim_params['learning_rate'])
+        
+        # Initiate Dataloader
+        print(self.batch_size)
+
+        self.trainloader = torch.utils.data.DataLoader(self.trainset, batch_size=self.batch_size, shuffle=True, num_workers=2)
+        self.valloader = torch.utils.data.DataLoader(self.validationset, batch_size=self.batch_size, shuffle=True, num_workers=2)
+        self.testloader = torch.utils.data.DataLoader(self.testset, batch_size=self.batch_size, shuffle=True, num_workers=2)
+        
+        print(self.learningrate)
+        # Initiate Schedular
+        schedular_name = self.optim_params['schedular']
+        if schedular_name == "Cosine":
+            self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
+        elif schedular_name == "Cycle":
+            self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=80, steps_per_epoch=len(self.trainloader))
+
+
+    def objective(self, trial):
+        
+        pretrained = self.settings["pretrained"]
+        freeze = self.settings["freeze"]
+        num_classes = self.num_classes
+        model = self.settings["model"]
+
+        if model == "resnet50":
+            logger.info("Loading ResNet50 new")
+            self.model = get_ResNet50(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
+        else:
+            logger.error("No model available")
+
+        # Model to Device
+        self.model.to(self.device)
+
+        self.optim_params = {
+                'learning_rate': trial.suggest_float('learning_rate', 1e-6, 1e-1,log=True),
+                'optimizer': trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
+                'schedular': trial.suggest_categorical("schedular", ["Cosine", "Cycle"]),
+                }
+
+
+        # Create new json_file per objective
+        now = datetime.now() # current time
+        now_formatted = now.strftime("%d.%m.%y %H:%M:%S")
+        self.settings["time"] = now_formatted
+
+        # New Title
+        optimizer_name = self.optim_params['optimizer']
+        learnig_rate = self.optim_params['learning_rate']
+        schedular = self.optim_params['schedular']
+        new_title = str(optimizer_name) + " " + str(learnig_rate) + " " + str(schedular)
+        print(new_title)
+        self.settings["title"] = new_title
+
+        # Refresh certain things
+        self.this_epoch = 0
+        self.best_accuracy = 0.0
+        self.iter = 0
+        self.history = {
+            'training_loss': [],
+            'training_accuracy': [],
+            'testing_loss': [],
+            'ece': [],
+            'nll': [],
+            'brier': [],
+            'calib_error': [],
+            'top_calib_error': [],
+            'auroc': [],
+            'sensitivity': [],
+            'specificity': [],
+            'testing_accuracy': [],
+            'balanced_accuracy': []
+        }
+    
+        # Start Trial
+        self.trial = trial
+        accuracy = self.train(num_epochs=2)
+    
+        return accuracy
 
 
     def hyper_optimizer(self, num_trials):

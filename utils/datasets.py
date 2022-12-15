@@ -2,6 +2,7 @@ import torch
 import torchvision
 from torchvision import transforms as T
 import numpy as np
+import random
 from loguru import logger
 
 
@@ -9,7 +10,7 @@ from loguru import logger
 # np.random.seed(0)
 
 def get_cifar_10(setup):
-    train_transform = T.Compose([T.Resize((224,224)),  #resises the image so it can be perfect for our model.
+    train_transform = T.Compose([T.Resize((32,32)),  #resises the image so it can be perfect for our model.
                                  T.RandomHorizontalFlip(), # FLips the image w.r.t horizontal axis
                                  T.RandomRotation(10),     #Rotates the image to a specified angel
                                  T.RandomAffine(0, shear=10, scale=(0.8,1.2)), #Performs actions like zooms, change shear angles.
@@ -231,9 +232,11 @@ def get_cifar_10_label_noise(setup):
 
 
     # Implement label noise
-    for i in range(len(trainset)):
-        if torch.rand(1)<0.2:  # with a probability of 10%
-            trainset[i][1] = (trainset[i][1] + torch.randint(1,9, (1,))) % 10
+    for data in trainset:
+        if random.random() < 0.2:
+            # Randomly select a label not equal to the correct one
+            incorrect_label = random.choice([x for x in range(10) if x != data[1]])
+            data = (data[0], incorrect_label)
 
 
     # Split training set into sets for training and validation for optimizing processes
@@ -246,9 +249,11 @@ def get_cifar_10_label_noise(setup):
     testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
 
     # Implement label noise
-    for i in range(len(testset)):
-        if torch.rand(1)<0.2:  # with a probability of 10%
-            testset[i][1] = (testset[i][1] + torch.randint(1,9, (1,))) % 10
+    for data in testset:
+        if random.random() < 0.2:
+            # Randomly select a label not equal to the correct one
+            incorrect_label = random.choice([x for x in range(10) if x != data[1]])
+            data = (data[0], incorrect_label)
     
     num_classes = 10
 
