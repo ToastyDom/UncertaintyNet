@@ -34,9 +34,7 @@ def calibration_error(y_prob, model_labels):
     return calib_error
 
 def top_calibration_error(y_prob, model_labels):
-    print(y_prob)
-    print(model_labels)
-    top_calib_error = calibration.get_top_calibration_error(y_prob, model_labels, p=1)
+    top_calib_error = calibration.get_top_calibration_error(y_prob, model_labels, p=1, debias=False)
     return top_calib_error
 
 
