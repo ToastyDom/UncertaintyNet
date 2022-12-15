@@ -741,7 +741,7 @@ class TrainUncertainty:
     
         # Start Trial
         self.trial = trial
-        accuracy = self.train(num_epochs=2)
+        accuracy = self.train(num_epochs=80)
     
         return accuracy
 
@@ -752,6 +752,8 @@ class TrainUncertainty:
         study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.MedianPruner())
         study.optimize(self.objective, n_trials=num_trials)
         best_trial = study.best_trial
+
+        self.best_trial = best_trial
 
         for key, value in best_trial.params.items():
             print("{}: {}".format(key, value))
