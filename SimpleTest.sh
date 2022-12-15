@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --time=24:00:00 # maximum allocated time
-#SBATCH --job-name=Trainbatch_061222 # name of the job
+#SBATCH --job-name=Trainbatch_121222 # name of the job
 #SBATCH --partition=gpu-unlimited # which partition the job should be scheduled on
-#SBATCH --output=./Trainbatch_061222-%j.out
-#SBATCH --error=./Trainbatch_061222-%j.err
+#SBATCH --output=./Trainbatch_121222-%j.out
+#SBATCH --error=./Trainbatch_121222-%j.err
 #SBATCH --gres=gpu:1
 ##SBATCH -w gpu[26-30]  Only define nodes inside that partition
 
@@ -24,8 +24,6 @@ echo $dt # debugging datetime print
 
 ##python3 main.py -s train -m beit -d cifar10 -e 80 -b 64 -o ADAM -lr 0.01 -f False -p False -g "True" -t 'Training BEiT from scratch on Cifar10'
 ##python3 main.py -s train -m beit -d cifar10 -e 80 -b 64 -o ADAM -lr 0.01 -f False -p True -g "True" -t 'Training BEiT pretrained on Cifar10'
-
-
 
 
 
