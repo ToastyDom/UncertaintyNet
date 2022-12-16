@@ -10,7 +10,7 @@ from loguru import logger
 # np.random.seed(0)
 
 def get_cifar_10(setup):
-    train_transform = T.Compose([T.Resize((32,32)),  #resises the image so it can be perfect for our model.
+    train_transform = T.Compose([T.Resize((224,224)),  #resises the image so it can be perfect for our model.
                                  T.RandomHorizontalFlip(), # FLips the image w.r.t horizontal axis
                                  T.RandomRotation(10),     #Rotates the image to a specified angel
                                  T.RandomAffine(0, shear=10, scale=(0.8,1.2)), #Performs actions like zooms, change shear angles.
