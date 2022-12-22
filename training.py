@@ -205,9 +205,10 @@ class TrainUncertainty:
         # Some bookkeeping:
         self.iter = 0
         self.history = {
-            'training_loss': [],
             'training_accuracy': [],
+            'balanced_accuracy': [],
             'testing_loss': [],
+            'training_loss': [],
             'ece': [],
             'nll': [],
             'brier': [],
@@ -217,7 +218,6 @@ class TrainUncertainty:
             'sensitivity': [],
             'specificity': [],
             'testing_accuracy': [],
-            'balanced_accuracy': []
         }
 
         ensure_directory("checkpoints")
