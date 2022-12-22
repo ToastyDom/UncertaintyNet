@@ -639,11 +639,6 @@ class TrainUncertainty:
 
         backup_logs(self.settings)
 
-        # self.scheduler.step()
-
-
-
-
         return balanced_acc
 
 
@@ -738,9 +733,10 @@ class TrainUncertainty:
         self.best_accuracy = 0.0
         self.iter = 0
         self.history = {
-            'training_loss': [],
             'training_accuracy': [],
+            'balanced_accuracy': [],
             'testing_loss': [],
+            'training_loss': [],
             'ece': [],
             'nll': [],
             'brier': [],
@@ -750,7 +746,6 @@ class TrainUncertainty:
             'sensitivity': [],
             'specificity': [],
             'testing_accuracy': [],
-            'balanced_accuracy': []
         }
     
         # Start Trial
