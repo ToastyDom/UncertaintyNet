@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import optuna
 import torch.optim as optim
 from loguru import logger
-from utils.models import get_ResNet50
+from utils.models import get_ResNet50, get_ResNet101, get_efficientnet, get_vit, get_beit
 from datetime import datetime
 
 
@@ -205,9 +205,10 @@ class TrainUncertainty:
         # Some bookkeeping:
         self.iter = 0
         self.history = {
-            'training_loss': [],
             'training_accuracy': [],
+            'balanced_accuracy': [],
             'testing_loss': [],
+            'training_loss': [],
             'ece': [],
             'nll': [],
             'brier': [],
@@ -217,7 +218,6 @@ class TrainUncertainty:
             'sensitivity': [],
             'specificity': [],
             'testing_accuracy': [],
-            'balanced_accuracy': []
         }
 
         ensure_directory("checkpoints")
@@ -627,19 +627,21 @@ class TrainUncertainty:
             self.settings["history"] = self.history
             update_logs(self.settings, self.best)
 
+            # If we use optuna, prune if bad
+            if self.hypersearch == True:
+                logger.info("Check for pruning")
+                self.trial.report(balanced_acc, epoch)
+
+                # Handle pruning based on the intermediate value.
+                if self.trial.should_prune():
+                    raise optuna.TrialPruned()
+
 
         backup_logs(self.settings)
 
         # self.scheduler.step()
 
-        # If we use optuna, prune if bad
-        if self.hypersearch == True:
-            logger.info("Check for pruning")
-            self.trial.report(balanced_acc, epoch)
 
-            # Handle pruning based on the intermediate value.
-            if self.trial.should_prune():
-                raise optuna.TrialPruned()
 
 
         return balanced_acc
@@ -693,6 +695,18 @@ class TrainUncertainty:
         if model == "resnet50":
             logger.info("Loading ResNet50 new")
             self.model = get_ResNet50(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
+        if model == "resnet101":
+            logger.info("Loading ResNet101 new")
+            self.model = get_ResNet101(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
+        if model == "efficientnet":
+            logger.info("Loading efficientnet new")
+            self.model = get_efficientnet(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
+        if model == "vit":
+            logger.info("Loading ViT new")
+            self.model = get_vit(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
+        if model == "beit":
+            logger.info("Loading BeiT new")
+            self.model = get_beit(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
         else:
             logger.error("No model available")
 
