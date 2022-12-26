@@ -60,6 +60,7 @@ def update_logs(settings, best=False, optim_data={}):
         log_json[log_time]["title"] = settings["title"]
         log_json[log_time]["setup"] = settings["setup"]
         log_json[log_time]["model"] = settings["model"]
+        log_json[log_time]["pretrained"] = settings["pretrained"]
         log_json[log_time]["freeze"] = settings["freeze"]
         log_json[log_time]["dataset"] = settings["dataset"]
         log_json[log_time]["batchsize"] = settings["batchsize"]
