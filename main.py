@@ -230,6 +230,7 @@ def main(args):
 
     # Select Model
     logger.info("Loading Model")
+
     if model == "resnet50":
         torchmodel = get_ResNet50(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
     elif model == "resnet101":

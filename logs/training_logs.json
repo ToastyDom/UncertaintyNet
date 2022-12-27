@@ -35057,5 +35057,341 @@
             "this_sensitivty": 0,
             "this_specificity": 0
         }
+    },
+    "27.12.22 12:38:07": {
+        "title": "trial 0: Adam 1.0536348988753474e-05 Cosine",
+        "setup": "optim",
+        "model": "resnet50",
+        "pretrained": "False",
+        "freeze": "False",
+        "dataset": "cifar10",
+        "batchsize": 128,
+        "optimizer": "SGD (\nParameter Group 0\n    dampening: 0\n    foreach: None\n    lr: 0.001\n    maximize: False\n    momentum: 0.9\n    nesterov: False\n    weight_decay: 0.0005\n)",
+        "scheduler": "<torch.optim.lr_scheduler.CosineAnnealingLR object at 0x7ff8dc24ec70>",
+        "current_epoch": 0,
+        "current_checkpoint": "checkpoints/27.12.22 12-38-07/model_1.pt",
+        "best_checkpoint": "checkpoints/27.12.22 12-38-07/best_model.pt",
+        "optim_data": {},
+        "history": {
+            "training_accuracy": [
+                0.12030612244897959
+            ],
+            "balanced_accuracy": [
+                0.13462274004917885
+            ],
+            "testing_loss": [
+                2.3681560916900635
+            ],
+            "training_loss": [
+                0.018799739545705366
+            ],
+            "ece": [
+                0.08077169105410577
+            ],
+            "nll": [
+                -0.18154426443576813
+            ],
+            "brier": [
+                0.9163913857907396
+            ],
+            "calib_error": [
+                0.04491172214608342
+            ],
+            "top_calib_error": [
+                0.08827612718194723
+            ],
+            "auroc": [
+                0.5507117509841919
+            ],
+            "sensitivity": [
+                0
+            ],
+            "specificity": [
+                0
+            ],
+            "testing_accuracy": [
+                0.136
+            ]
+        },
+        "best_config": {
+            "this_epoch": 0,
+            "this_train_accuracy": 0.12030612244897959,
+            "this_test_accuracy": 0.136,
+            "this_balanced_test_accuracy": 0.13462274004917885,
+            "this_ece": 0.08077169105410577,
+            "this_nll": -0.18154426443576813,
+            "this_brier": 0.9163913857907396,
+            "this_calib_error": 0.04491172214608342,
+            "this_top_calib_error": 0.08827612718194723,
+            "this_auroc": 0.5507117509841919,
+            "this_sensitivty": 0,
+            "this_specificity": 0
+        },
+        "current_config": {
+            "this_epoch": 0,
+            "this_train_accuracy": 0.12030612244897959,
+            "this_test_accuracy": 0.136,
+            "this_balanced_test_accuracy": 0.13462274004917885,
+            "this_ece": 0.08077169105410577,
+            "this_nll": -0.18154426443576813,
+            "this_brier": 0.9163913857907396,
+            "this_calib_error": 0.04491172214608342,
+            "this_top_calib_error": 0.08827612718194723,
+            "this_auroc": 0.5507117509841919,
+            "this_sensitivty": 0,
+            "this_specificity": 0
+        }
+    },
+    "27.12.22 12:40:18": {
+        "title": "trial 1: Adam 0.0004768171202242069 Cosine",
+        "setup": "optim",
+        "model": "resnet50",
+        "pretrained": "False",
+        "freeze": "False",
+        "dataset": "cifar10",
+        "batchsize": 128,
+        "optimizer": "SGD (\nParameter Group 0\n    dampening: 0\n    foreach: None\n    lr: 0.001\n    maximize: False\n    momentum: 0.9\n    nesterov: False\n    weight_decay: 0.0005\n)",
+        "scheduler": "<torch.optim.lr_scheduler.CosineAnnealingLR object at 0x7ff8dc24ec10>",
+        "current_epoch": 0,
+        "current_checkpoint": "checkpoints/27.12.22 12-40-18/model_1.pt",
+        "best_checkpoint": "checkpoints/27.12.22 12-40-18/best_model.pt",
+        "optim_data": {},
+        "history": {
+            "training_accuracy": [
+                0.2990204081632653
+            ],
+            "balanced_accuracy": [
+                0.40109588432805365
+            ],
+            "testing_loss": [
+                1.6592469911575318
+            ],
+            "training_loss": [
+                0.015265490799534077
+            ],
+            "ece": [
+                0.04135880708694458
+            ],
+            "nll": [
+                -2.187638566970825
+            ],
+            "brier": [
+                0.7238928430248402
+            ],
+            "calib_error": [
+                0.01966994862043854
+            ],
+            "top_calib_error": [
+                0.04368236596882343
+            ],
+            "auroc": [
+                0.8032666444778442
+            ],
+            "sensitivity": [
+                0
+            ],
+            "specificity": [
+                0
+            ],
+            "testing_accuracy": [
+                0.403
+            ]
+        },
+        "best_config": {
+            "this_epoch": 0,
+            "this_train_accuracy": 0.2990204081632653,
+            "this_test_accuracy": 0.403,
+            "this_balanced_test_accuracy": 0.40109588432805365,
+            "this_ece": 0.04135880708694458,
+            "this_nll": -2.187638566970825,
+            "this_brier": 0.7238928430248402,
+            "this_calib_error": 0.01966994862043854,
+            "this_top_calib_error": 0.04368236596882343,
+            "this_auroc": 0.8032666444778442,
+            "this_sensitivty": 0,
+            "this_specificity": 0
+        },
+        "current_config": {
+            "this_epoch": 0,
+            "this_train_accuracy": 0.2990204081632653,
+            "this_test_accuracy": 0.403,
+            "this_balanced_test_accuracy": 0.40109588432805365,
+            "this_ece": 0.04135880708694458,
+            "this_nll": -2.187638566970825,
+            "this_brier": 0.7238928430248402,
+            "this_calib_error": 0.01966994862043854,
+            "this_top_calib_error": 0.04368236596882343,
+            "this_auroc": 0.8032666444778442,
+            "this_sensitivty": 0,
+            "this_specificity": 0
+        }
+    },
+    "27.12.22 12:43:31": {
+        "title": "trial 0: RMSprop 6.230127464550146e-06 Cosine",
+        "setup": "optim",
+        "model": "resnet50",
+        "pretrained": "False",
+        "freeze": "False",
+        "dataset": "cifar10",
+        "batchsize": 128,
+        "optimizer": "SGD (\nParameter Group 0\n    dampening: 0\n    foreach: None\n    lr: 0.001\n    maximize: False\n    momentum: 0.9\n    nesterov: False\n    weight_decay: 0.0005\n)",
+        "scheduler": "<torch.optim.lr_scheduler.CosineAnnealingLR object at 0x7efb5d2cfc70>",
+        "current_epoch": 0,
+        "current_checkpoint": "checkpoints/27.12.22 12-43-31/model_1.pt",
+        "best_checkpoint": "checkpoints/27.12.22 12-43-31/best_model.pt",
+        "optim_data": {},
+        "history": {
+            "training_accuracy": [
+                0.11881632653061225
+            ],
+            "balanced_accuracy": [
+                0.1436832515592287
+            ],
+            "testing_loss": [
+                2.354995460510254
+            ],
+            "training_loss": [
+                0.01878945142882211
+            ],
+            "ece": [
+                0.07508814963698388
+            ],
+            "nll": [
+                -0.18555729615688324
+            ],
+            "brier": [
+                0.9131656749910791
+            ],
+            "calib_error": [
+                0.038941262696944395
+            ],
+            "top_calib_error": [
+                0.08916406602412463
+            ],
+            "auroc": [
+                0.5600650310516357
+            ],
+            "sensitivity": [
+                0
+            ],
+            "specificity": [
+                0
+            ],
+            "testing_accuracy": [
+                0.145
+            ]
+        },
+        "best_config": {
+            "this_epoch": 0,
+            "this_train_accuracy": 0.11881632653061225,
+            "this_test_accuracy": 0.145,
+            "this_balanced_test_accuracy": 0.1436832515592287,
+            "this_ece": 0.07508814963698388,
+            "this_nll": -0.18555729615688324,
+            "this_brier": 0.9131656749910791,
+            "this_calib_error": 0.038941262696944395,
+            "this_top_calib_error": 0.08916406602412463,
+            "this_auroc": 0.5600650310516357,
+            "this_sensitivty": 0,
+            "this_specificity": 0
+        },
+        "current_config": {
+            "this_epoch": 0,
+            "this_train_accuracy": 0.11881632653061225,
+            "this_test_accuracy": 0.145,
+            "this_balanced_test_accuracy": 0.1436832515592287,
+            "this_ece": 0.07508814963698388,
+            "this_nll": -0.18555729615688324,
+            "this_brier": 0.9131656749910791,
+            "this_calib_error": 0.038941262696944395,
+            "this_top_calib_error": 0.08916406602412463,
+            "this_auroc": 0.5600650310516357,
+            "this_sensitivty": 0,
+            "this_specificity": 0
+        }
+    },
+    "27.12.22 12:45:37": {
+        "title": "trial 1: SGD 3.9386925525956234e-05 Cycle",
+        "setup": "optim",
+        "model": "resnet50",
+        "pretrained": "False",
+        "freeze": "False",
+        "dataset": "cifar10",
+        "batchsize": 128,
+        "optimizer": "SGD (\nParameter Group 0\n    dampening: 0\n    foreach: None\n    lr: 0.001\n    maximize: False\n    momentum: 0.9\n    nesterov: False\n    weight_decay: 0.0005\n)",
+        "scheduler": "<torch.optim.lr_scheduler.OneCycleLR object at 0x7efb5d2cfc10>",
+        "current_epoch": 0,
+        "current_checkpoint": "checkpoints/27.12.22 12-45-37/model_1.pt",
+        "best_checkpoint": "checkpoints/27.12.22 12-45-37/best_model.pt",
+        "optim_data": {},
+        "history": {
+            "training_accuracy": [
+                0.10108163265306122
+            ],
+            "balanced_accuracy": [
+                0.0951609806005306
+            ],
+            "testing_loss": [
+                2.4764337730407715
+            ],
+            "training_loss": [
+                0.01946369805141371
+            ],
+            "ece": [
+                0.13133618085086343
+            ],
+            "nll": [
+                -0.5064831917285919
+            ],
+            "brier": [
+                0.9398062669080606
+            ],
+            "calib_error": [
+                0.058959768063836085
+            ],
+            "top_calib_error": [
+                0.1296568770110607
+            ],
+            "auroc": [
+                0.5095924139022827
+            ],
+            "sensitivity": [
+                0
+            ],
+            "specificity": [
+                0
+            ],
+            "testing_accuracy": [
+                0.095
+            ]
+        },
+        "best_config": {
+            "this_epoch": 0,
+            "this_train_accuracy": 0.10108163265306122,
+            "this_test_accuracy": 0.095,
+            "this_balanced_test_accuracy": 0.0951609806005306,
+            "this_ece": 0.13133618085086343,
+            "this_nll": -0.5064831917285919,
+            "this_brier": 0.9398062669080606,
+            "this_calib_error": 0.058959768063836085,
+            "this_top_calib_error": 0.1296568770110607,
+            "this_auroc": 0.5095924139022827,
+            "this_sensitivty": 0,
+            "this_specificity": 0
+        },
+        "current_config": {
+            "this_epoch": 0,
+            "this_train_accuracy": 0.10108163265306122,
+            "this_test_accuracy": 0.095,
+            "this_balanced_test_accuracy": 0.0951609806005306,
+            "this_ece": 0.13133618085086343,
+            "this_nll": -0.5064831917285919,
+            "this_brier": 0.9398062669080606,
+            "this_calib_error": 0.058959768063836085,
+            "this_top_calib_error": 0.1296568770110607,
+            "this_auroc": 0.5095924139022827,
+            "this_sensitivty": 0,
+            "this_specificity": 0
+        }
     }
 }

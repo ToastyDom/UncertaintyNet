@@ -40,7 +40,17 @@ def ensure_directory(path):
 
 
 
-def update_logs(settings, best=False, optim_data={}):
+def create_json_file(filename):
+    with open(filename, 'w') as f:
+        print("The json file is created")
+
+        dictionary = {}
+        f.write(json.dumps(dictionary, indent=4))
+
+
+
+
+def update_logs(settings, best=False, optim_data={}, optim=False):
     """Function to update logs of the training configuration
 
     Args:
@@ -48,7 +58,19 @@ def update_logs(settings, best=False, optim_data={}):
         best (bool, optional): If this is the best model. Defaults to False.
     """
 
-    with open("logs/training_logs.json") as json_file:
+    filename = "logs/training_logs.json"
+
+    if optim==True:
+        log_time = settings["time"]
+        log_time = log_time.replace(":","-")
+        filename = f"logs/optim_{log_time}.json"
+        if not os.path.exists(filename):
+            create_json_file(filename)
+        
+
+    print(filename)
+
+    with open(filename) as json_file:
         log_json = json.load(json_file)
 
         log_time = settings["time"]
@@ -113,7 +135,7 @@ def update_logs(settings, best=False, optim_data={}):
 
 
     # save changes
-    with open("logs/training_logs.json", "w") as json_file:
+    with open(filename, "w") as json_file:
         json_file.seek(0) # set pointer to file beginning
         json.dump(log_json, json_file, indent=4)
         json_file.truncate()
@@ -626,7 +648,14 @@ class TrainUncertainty:
             self.settings["current_checkpoint"] = self.model_path
             self.settings["best_checkpoint"] = self.best_path
             self.settings["history"] = self.history
-            update_logs(self.settings, self.best)
+
+            if self.hypersearch == False:
+                update_logs(self.settings, self.best)
+            elif self.hypersearch == True:
+                if int(self.trial.number) > 1:
+                    update_logs(self.settings, self.best, optim_data=self.study.best_trial.params.items(), optim=True)
+                else:
+                     update_logs(self.settings, self.best, optim=True)
 
             # If we use optuna, prune if bad
             if self.hypersearch == True:
@@ -688,19 +717,20 @@ class TrainUncertainty:
         num_classes = self.num_classes
         model = self.settings["model"]
 
+
         if model == "resnet50":
             logger.info("Loading ResNet50 new")
             self.model = get_ResNet50(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
-        if model == "resnet101":
+        elif model == "resnet101":
             logger.info("Loading ResNet101 new")
             self.model = get_ResNet101(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
-        if model == "efficientnet":
+        elif model == "efficientnet":
             logger.info("Loading efficientnet new")
             self.model = get_efficientnet(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
-        if model == "vit":
+        elif model == "vit":
             logger.info("Loading ViT new")
             self.model = get_vit(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
-        if model == "beit":
+        elif model == "beit":
             logger.info("Loading BeiT new")
             self.model = get_beit(pretrained=pretrained, freeze=freeze, num_classes=num_classes)
         else:
@@ -725,7 +755,7 @@ class TrainUncertainty:
         optimizer_name = self.optim_params['optimizer']
         learnig_rate = self.optim_params['learning_rate']
         schedular = self.optim_params['schedular']
-        new_title = str(optimizer_name) + " " + str(learnig_rate) + " " + str(schedular)
+        new_title = "trial " + str(trial.number) + ": " + str(optimizer_name) + " " + str(learnig_rate) + " " + str(schedular)
         print(new_title)
         self.settings["title"] = new_title
 
@@ -759,9 +789,9 @@ class TrainUncertainty:
     def hyper_optimizer(self, num_trials):
         
         
-        study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.MedianPruner())
-        study.optimize(self.objective, n_trials=num_trials)
-        best_trial = study.best_trial
+        self.study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(), pruner=optuna.pruners.MedianPruner())
+        self.study.optimize(self.objective, n_trials=num_trials)
+        best_trial = self.study.best_trial
 
         self.best_trial = best_trial
 
@@ -783,7 +813,7 @@ class TrainUncertainty:
 
         self.settings['history'] = self.history
  
-        update_logs(self.settings, self.best, optim_data=best_trial.params)
+        update_logs(self.settings, self.best, optim_data=best_trial.params.items(), optim=True)
 
 
         
