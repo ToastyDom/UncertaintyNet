@@ -637,10 +637,12 @@ class TrainUncertainty:
             if balanced_acc > self.best_accuracy:
                 self.best = True
                 self.best_accuracy = balanced_acc
-                self.save(best=True)
+                if self.hypersearch == False:
+                    self.save(best=True)
             else:
                 self.best = False
-                self.save()
+                if self.hypersearch == False:
+                    self.save()
 
 
             # Update Logging
