@@ -50,7 +50,7 @@ def create_json_file(filename):
 
 
 
-def update_logs(settings, best=False, optim_data={}, optim=False):
+def update_logs(settings, best=False, optim=False):
     """Function to update logs of the training configuration
 
     Args:
@@ -61,9 +61,9 @@ def update_logs(settings, best=False, optim_data={}, optim=False):
     filename = "logs/training_logs.json"
 
     if optim==True:
-        log_time = settings["time"]
-        log_time = log_time.replace(":","-")
-        filename = f"logs/optim_{log_time}.json"
+        model = settings["model"]
+        pt = settings["pretrained"]
+        filename = f"logs/optim_{model}_{pt}.json"
         if not os.path.exists(filename):
             create_json_file(filename)
         
@@ -91,7 +91,6 @@ def update_logs(settings, best=False, optim_data={}, optim=False):
         log_json[log_time]["current_epoch"] = settings["current_epoch"]
         log_json[log_time]["current_checkpoint"] = settings["current_checkpoint"]
         log_json[log_time]["best_checkpoint"] = settings["best_checkpoint"]
-        log_json[log_time]["optim_data"] = optim_data
         log_json[log_time]["history"] = settings["history"]
 
 
@@ -654,10 +653,7 @@ class TrainUncertainty:
             if self.hypersearch == False:
                 update_logs(self.settings, self.best)
             elif self.hypersearch == True:
-                if int(self.trial.number) > 1:
-                    update_logs(self.settings, self.best, optim_data=self.study.best_trial.params.items(), optim=True)
-                else:
-                     update_logs(self.settings, self.best, optim=True)
+                update_logs(self.settings, self.best, optim=True)
 
             # If we use optuna, prune if bad
             if self.hypersearch == True:
