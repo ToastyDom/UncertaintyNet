@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=99:00:00 # maximum allocated time
+#SBATCH --time=12-23:00:00 # maximum allocated time
 #SBATCH --job-name=EN_s # name of the job
 #SBATCH --partition=gpu-unlimited # which partition the job should be scheduled on
 #SBATCH --output=./EN_s-%j.out
@@ -10,8 +10,7 @@
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
 
-python3 main.py -s optim -m efficientnet -d cifar10 -e 60 -b 32 -f False -p False -g "True" -t 'Optimizing Efficientnet from scratch on Cifar10'
-##python3 main.py -s optim -m efficientnet -d cifar10 -e 60 -b 32 -f False -p True -g "True" -t 'Optimizing Efficientnet pretrained on Cifar10'
+python3 main.py -s optim -m efficientnet -d ham -e 60 -b 32 -f False -p False -g "True" -t 'Optimizing Efficientnet from scratch on Ham'
 
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print

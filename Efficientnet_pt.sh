@@ -10,9 +10,7 @@
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
 
-##python3 main.py -s optim -m efficientnet -d cifar10 -e 60 -b 32 -f False -p False -g "True" -t 'Optimizing Efficientnet from scratch on Cifar10'
-python3 main.py -s optim -m efficientnet -d cifar10 -e 60 -b 32 -f False -p True -g "True" -t 'Optimizing Efficientnet pretrained on Cifar10'
-
+python3 main.py -s optim -m efficientnet -d ham -e 60 -b 32 -f False -p True -g "True" -t 'Optimizing Efficientnet pretrained on Ham'
 
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
