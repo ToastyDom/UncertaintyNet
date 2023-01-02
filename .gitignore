@@ -2,7 +2,15 @@
 *.pyc
 *.pt
 *.gz
+*.Identifier
 data/
 logs/backups/21.10.22 17:32:42.json
 logs/backups/21.10.22 17:32:42.json
 logs/backups/21.10.22 17:32:42.json
+Ham10000/HAM10000_images_part_1
+Ham10000/HAM10000_images_part_2
+Ham10000/HAM10000_segmentations_lesion_tschandl
+Ham10000/ISIC2018_Task3_Test_Images
+Ham10000/HAM10000_metadata
+Ham10000/ISIC2018_Task3_Test_NatureMedicine_AI_Interaction_Benefit.csv
+Ham10000/ISIC_2019_Training_Input

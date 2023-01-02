@@ -8,3 +8,4 @@ tensorflow
 uncertainty-calibration
 timm
 numpy
+pandas

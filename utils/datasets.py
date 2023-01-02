@@ -1,13 +1,86 @@
 import torch
 import torchvision
 from torchvision import transforms as T
+from torch.utils.data import DataLoader,Dataset
 import numpy as np
 import random
 from loguru import logger
-
+from glob import glob
+import os
+import pandas as pd
+from PIL import Image
 
 # torch.manual_seed(0)
 # np.random.seed(0)
+
+class HAM10000(Dataset):
+    """Pytroch dataloader for the HAM Dataset"""
+    def __init__(self, df, transform=None):
+        self.df = df
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, index):
+        # Load data and get label
+        X = Image.open(self.df['path'][index])
+        y = torch.tensor(int(self.df['cell_type_idx'][index]))
+
+        if self.transform:
+            X = self.transform(X)
+
+        return X, y
+
+
+def get_ham10000(setup):
+    train_transform = T.Compose([T.Resize((224,224)),  #resises the image so it can be perfect for our model.
+                                 T.RandomHorizontalFlip(), # FLips the image w.r.t horizontal axis
+                                 T.RandomRotation(10),     #Rotates the image to a specified angel
+                                 T.RandomAffine(0, shear=10, scale=(0.8,1.2)), #Performs actions like zooms, change shear angles.
+                                 T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2), # Set the color params
+                                 T.ToTensor(), # comvert the image to tensor so that it can work with torch
+                                 T.Normalize((0.49139968, 0.48215827, 0.44653124), (0.24703233, 0.24348505, 0.26158768)) #Normalize all the images
+                                 ])
+
+    transform = T.Compose([T.ToTensor(),
+                           T.Resize((224,224)),
+                           T.Normalize((0.49139968, 0.48215827, 0.44653124), (0.24703233, 0.24348505, 0.26158768))])
+
+
+    # Retrieve all images
+    data_dir = "Ham10000"
+    all_image_path = glob(os.path.join(data_dir, '*', '*.jpg'))
+    imageid_path_dict = {os.path.splitext(os.path.basename(x))[0]: x for x in all_image_path}
+
+    # Get data .csv and add new info to dataframe
+    df_original = pd.read_csv(os.path.join(data_dir, 'Ham_data.csv'))
+    df_original['path'] = df_original['image_id'].map(imageid_path_dict.get)
+    df_original['cell_type_idx'] = pd.Categorical(df_original['benign_malignant']).codes
+
+    # Get train val and testset
+    df_train = df_original[(df_original["set"]=="train") & (df_original["fold"]==0.0)]
+    df_test = df_original[(df_original["set"]=="test")]
+    df_val = df_original[(df_original["set"]=="val") & (df_original["fold"]==0.0)]
+
+    df_train = df_train.reset_index()
+    df_val = df_val.reset_index()
+    df_test = df_test.reset_index()
+
+    trainset = HAM10000(df_train, transform=train_transform)
+    validationset = HAM10000(df_val, transform=train_transform)
+    testset = HAM10000(df_test, transform=transform)
+
+    num_classes = 2
+
+    return trainset, validationset, testset, num_classes
+
+
+    
+
+
+
+
 
 def get_cifar_10(setup):
     train_transform = T.Compose([T.Resize((224,224)),  #resises the image so it can be perfect for our model.

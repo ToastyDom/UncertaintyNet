@@ -65,7 +65,7 @@ def sensitivity_specificity(model_output, model_labels, n_classes):
         return 0, 0
     else:
         preds = torch.argmax(model_output.data, 1)
-        conf_matrix = confusion_matrix(model_labels.cpu(), preds.cpu())
+        conf_matrix = confusion_matrix(model_labels, preds)
 
         TP = conf_matrix[1][1]
         TN = conf_matrix[0][0]

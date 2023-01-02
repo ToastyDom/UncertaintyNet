@@ -10,7 +10,7 @@ import torch
 from loguru import logger
 
 from training import TrainUncertainty
-from utils.datasets import get_cifar_10, get_cifar_10_imbalanced, get_cifar_10_label_noise, get_cifar_10_scarcity, get_cifar_10_scarcity_ib
+from utils.datasets import get_cifar_10, get_cifar_10_imbalanced, get_cifar_10_label_noise, get_cifar_10_scarcity, get_cifar_10_scarcity_ib, get_ham10000
 from utils.models import get_ResNet101, get_ResNet50, get_efficientnet, get_vit, get_beit
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -19,6 +19,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 random.seed(10)
 np.random.seed(10)
 torch.manual_seed(10)
+torch.cuda.manual_seed(10)
 
 def get_free_gpu_idx():
     """Get the index of the GPU with current lowest memory usage.
@@ -86,7 +87,7 @@ def parse_args():
         type=str,
         help="Training on which dataset",
         default="Cifar10",
-        choices=["cifar10", "cifar10_im", "cifar10_ln", "cifar10_s", "cifar10_sib"]
+        choices=["cifar10", "cifar10_im", "cifar10_ln", "cifar10_s", "cifar10_sib", "ham"]
     )
     parser.add_argument(
         "--epochs",
@@ -224,6 +225,8 @@ def main(args):
         trainset, validationset, testset, num_classes = get_cifar_10_scarcity(setup)
     elif dataset == "cifar10_sib":
          trainset, validationset, testset, num_classes = get_cifar_10_scarcity_ib(setup)
+    elif dataset == "ham":
+         trainset, validationset, testset, num_classes = get_ham10000(setup)
     else:
         logger.warning("No dataset selected. Will select Cifar10")
         trainset, validationset, testset, num_classes = get_cifar_10(setup)
