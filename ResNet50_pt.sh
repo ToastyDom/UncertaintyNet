@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=99:00:00 # maximum allocated time
+#SBATCH --time=12-23:00:00 # maximum allocated time
 #SBATCH --job-name=ResNet50_pt # name of the job
 #SBATCH --partition=gpu-unlimited # which partition the job should be scheduled on
 #SBATCH --output=./ResNet50_pt-%j.out

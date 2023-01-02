@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=99:00:00 # maximum allocated time
+#SBATCH --time=12-23:00:00 # maximum allocated time
 #SBATCH --job-name=EN_pt # name of the job
 #SBATCH --partition=gpu-unlimited # which partition the job should be scheduled on
 #SBATCH --output=./EN_pt-%j.out
