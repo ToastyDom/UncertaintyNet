@@ -10,7 +10,7 @@
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
 
-python3 main.py -s optim -m resnet50 -d cifar10 -e 60 -b 64 -f False -p True -g "True" -t 'Optimizing ResNet50 pretrained on Ham'
+python3 main.py -s optim -m resnet50 -d ham -e 60 -b 64 -f False -p True -g "True" -t 'Optimizing ResNet50 pretrained on Ham'
 
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print

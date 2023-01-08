@@ -34,6 +34,7 @@ class HAM10000(Dataset):
 
 
 def get_ham10000(setup):
+    logger.info("Gettng Ham10000 Dataset!")
     train_transform = T.Compose([T.Resize((224,224)),  #resises the image so it can be perfect for our model.
                                  T.RandomHorizontalFlip(), # FLips the image w.r.t horizontal axis
                                  T.RandomRotation(10),     #Rotates the image to a specified angel
