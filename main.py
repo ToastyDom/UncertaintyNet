@@ -108,7 +108,15 @@ def parse_args():
         "-o",
         type=str,
         help="Which Optimizer to choose",
-        choices=["SGD", "ADAM"]
+         choices=["SGD", "ADAM", "RMSProp"]
+    )
+
+    parser.add_argument(
+        "--scheduler",
+        "-sch",
+        type=str,
+        help="Which scheduler to choose",
+        choices=["Cycle", "Cosine"]
     )
 
     parser.add_argument(
@@ -160,8 +168,6 @@ def parse_args():
     return parser.parse_args()
 
 
-
-
 def main(args):
     """Main function that starts pip
 
@@ -174,9 +180,6 @@ def main(args):
         print("Using GPU #%s" % gpu_idx)
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
 
-
-        
-
     setup = args.setup
     dataset = args.dataset
     model = args.model
@@ -188,6 +191,7 @@ def main(args):
     title = args.title
     learningrate = args.learningrate
     optimizer = args.optimizer
+    scheduler = args.scheduler
  
     # Create logging state
     now = datetime.now() # current time
@@ -198,6 +202,7 @@ def main(args):
                 "model": model,
                 "pretrained": pretrained,
                 "optimizer": optimizer,
+                "scheduler": scheduler,
                 "learningrate": learningrate,
                 "dataset": dataset,
                 "freeze": freeze,
@@ -247,9 +252,6 @@ def main(args):
     else:
         logger.warning("No model selected. Will select ResNet50")
         torchmodel = get_ResNet50(pretrained=True,freeze=freeze, num_classes=num_classes)
-
-
-
 
     if setup == "optim":
         logger.info("Starting Optimiation")

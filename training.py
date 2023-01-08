@@ -190,12 +190,19 @@ class TrainUncertainty:
         self.best_accuracy = 0.0
         self.hypersearch = False
 
+        self.scheduler_name = settings["scheduler"]
+
         
         # Select Optimizer
         if self.str_optimizer == "SGD":
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learningrate, momentum=0.9, weight_decay=5e-4)
+            logger.info("Optimizer: SGD")
         elif self.str_optimizer == "ADAM":
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learningrate, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+            logger.info("Optimizer: ADAM")
+        elif self.str_optimizer == "RMSProp":
+            self.optimizer = torch.optim.RMSprop(self.model.parameters(), lr=self.learningrate)
+            logger.info("Optimizer: RMSProp")
         else:
             logger.warning("No Optimizer selected! And therefore no learningrate")
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
@@ -527,7 +534,13 @@ class TrainUncertainty:
             logger.info("Changing Dataset for Hyperparamter serach")
             self.set_hyperparameter()
         else:
-            self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=num_epochs, steps_per_epoch=len(self.trainloader))
+            if self.scheduler_name == "Cosine":
+                self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
+                logger.info("Scheduler: COSINE")
+            elif self.scheduler_name == "Cycle":
+                self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=num_epochs, steps_per_epoch=len(self.trainloader))
+                logger.info("Scheduler: CYCLE")
+
 
 
         
@@ -700,11 +713,11 @@ class TrainUncertainty:
         self.testloader = torch.utils.data.DataLoader(self.testset, batch_size=self.batch_size, shuffle=True, num_workers=2)
         
         print(self.learningrate)
-        # Initiate Schedular
-        schedular_name = self.optim_params['schedular']
-        if schedular_name == "Cosine":
+        # Initiate scheduler
+        scheduler_name = self.optim_params['scheduler']
+        if scheduler_name == "Cosine":
             self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=200)
-        elif schedular_name == "Cycle":
+        elif scheduler_name == "Cycle":
             self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.learningrate, epochs=80, steps_per_epoch=len(self.trainloader))
 
 
@@ -740,7 +753,7 @@ class TrainUncertainty:
         self.optim_params = {
                 'learning_rate': trial.suggest_float('learning_rate', 1e-6, 1e-1,log=True),
                 'optimizer': trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
-                'schedular': trial.suggest_categorical("schedular", ["Cosine", "Cycle"]),
+                'scheduler': trial.suggest_categorical("scheduler", ["Cosine", "Cycle"]),
                 }
 
 
@@ -752,8 +765,8 @@ class TrainUncertainty:
         # New Title
         optimizer_name = self.optim_params['optimizer']
         learnig_rate = self.optim_params['learning_rate']
-        schedular = self.optim_params['schedular']
-        new_title = "trial " + str(trial.number) + ": " + str(optimizer_name) + " " + str(learnig_rate) + " " + str(schedular)
+        scheduler = self.optim_params['scheduler']
+        new_title = "trial " + str(trial.number) + ": " + str(optimizer_name) + " " + str(learnig_rate) + " " + str(scheduler)
         print(new_title)
         self.settings["title"] = new_title
 
@@ -779,7 +792,7 @@ class TrainUncertainty:
     
         # Start Trial
         self.trial = trial
-        accuracy = self.train(num_epochs=80)
+        accuracy = self.train(num_epochs=120)
     
         return accuracy
 

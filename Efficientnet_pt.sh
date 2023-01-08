@@ -10,7 +10,7 @@
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
 
-python3 main.py -s optim -m efficientnet -d ham -e 60 -b 32 -f False -p True -g "True" -t 'Optimizing Efficientnet pretrained on Ham'
+python3 main.py -s optim -m efficientnet -d ham -e 60 -b 24 -f False -p True -g "True" -t 'Optimizing Efficientnet pretrained on Ham'
 
 dt=$(date '+%d/%m/%Y %H:%M:%S');
 echo $dt # debugging datetime print
