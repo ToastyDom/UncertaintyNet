@@ -824,7 +824,7 @@ class TrainUncertainty:
 
         self.settings['history'] = self.history
  
-        update_logs(self.settings, self.best, optim_data=best_trial.params.items(), optim=True)
+        update_logs(self.settings, self.best, optim=True)
 
 
         

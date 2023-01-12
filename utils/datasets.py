@@ -115,14 +115,14 @@ def get_cifar_10(setup):
 
 
 
-def count_data(dataset):
-    # Count current data
-    classes = list(dataset.classes)
-    class_counter = np.zeros(len(classes))
-    for data, label in dataset:
-        class_counter[label] +=1
-    print(class_counter)
-    logger.info("Class counter: ", class_counter)
+# def count_data(dataset):
+#     # Count current data
+#     classes = list(dataset.classes)
+#     class_counter = np.zeros(len(classes))
+#     for data, label in dataset:
+#         class_counter[label] +=1
+#     print(class_counter)
+#     logger.info("Class counter: ", class_counter)
 
 
 
@@ -152,7 +152,7 @@ def make_imbalanced(dataset, percentages):
             if dataset[j][1] == i:  # Wenn die aktuelle Klasse mit der Datei übereinstimmt
                 data_from_this_class.append(indices[j]) # wir wissen dass element j zu dieser Klasse dazu gehört
         
-        class_indices.append(data_from_this_class[:num_images[i]])  # Nimm aber nur so viele wie oben angegeben
+        class_indices.append(data_from_this_class[:int(num_images[i])])  # Nimm aber nur so viele wie oben angegeben
 
 
     # Flatten the list
@@ -161,7 +161,7 @@ def make_imbalanced(dataset, percentages):
     # Create a new dataset with the new indices
     imbalanced_dataset = torch.utils.data.Subset(dataset, class_indices)
 
-    count_data(imbalanced_dataset)
+    #count_data(imbalanced_dataset)
 
 
     return imbalanced_dataset
